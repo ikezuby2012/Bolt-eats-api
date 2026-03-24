@@ -1,0 +1,107 @@
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace Infrastructure.Address;
+
+internal sealed class AddressConfiguration : IEntityTypeConfiguration<Domain.Address.Address>
+{
+    public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Domain.Address.Address> builder)
+    {
+        builder.ToTable("TBL_ADDRESS");
+
+        builder.HasKey(u => u.Id);
+
+        builder.Property(a => a.UserId)
+            .IsRequired()
+            .HasColumnName("user_id");
+
+        builder.Property(a => a.Label)
+            .IsRequired()
+            .HasMaxLength(100)
+            .HasColumnName("label");
+
+        builder.Property(a => a.Street)
+            .IsRequired()
+            .HasMaxLength(255)
+            .HasColumnName("street");
+
+        builder.Property(a => a.City)
+            .IsRequired()
+            .HasMaxLength(100)
+            .HasColumnName("city");
+
+        builder.Property(a => a.State)
+            .HasMaxLength(100)
+            .HasColumnName("state");
+
+        builder.Property(a => a.Country)
+            .IsRequired()
+            .HasMaxLength(100)
+            .HasColumnName("country");
+
+        builder.Property(a => a.PostalCode)
+            .IsRequired()
+            .HasMaxLength(20)
+            .HasColumnName("postal_code");
+
+        builder.Property(a => a.Latitude)
+            .HasColumnType("numeric(9,6)")
+            .HasColumnName("latitude");
+
+        builder.Property(a => a.Longitude)
+            .HasColumnType("numeric(9,6)")
+            .HasColumnName("longitude");
+
+        builder.Property(a => a.LongitudeRaw).HasMaxLength(100).HasColumnName("longitude_raw");
+        builder.Property(a => a.LatitudeRaw).HasMaxLength(100).HasColumnName("latitude_raw");
+
+
+        builder.Property(a => a.IsDefault)
+            .IsRequired()
+            .HasDefaultValueSql("false")
+            .HasColumnName("is_default");
+
+        builder.Property(a => a.IsSoftDeleted)
+            .IsRequired()
+            .HasDefaultValueSql("false")
+            .HasColumnName("is_soft_deleted");
+
+        builder.Property(a => a.CreatedAt)
+            .HasColumnType("timestamp with time zone")
+            .HasColumnName("created_at");
+
+        builder.Property(a => a.CreatedBy)
+            .HasMaxLength(100)
+            .HasColumnName("created_by");
+
+        builder.Property(a => a.UpdatedAt)
+            .HasColumnType("timestamp with time zone")
+            .HasColumnName("updated_at");
+
+        builder.Property(a => a.UpdatedBy)
+            .HasMaxLength(100)
+            .HasColumnName("updated_by");
+
+        builder.HasOne(a => a.User)
+            .WithMany() // Or .WithMany(u => u.Addresses) if defined
+            .HasForeignKey(a => a.UserId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired()
+            .HasConstraintName("fk_address_user");
+
+        builder.HasIndex(a => a.UserId)
+            .HasDatabaseName("ix_tbl_address_user_id");
+
+        builder.HasIndex(a => new { a.UserId, a.IsDefault })
+            .HasDatabaseName("ix_tbl_address_user_default")
+            .IsUnique()
+            .HasFilter("is_soft_deleted = false");
+
+        builder.ToTable("TBL_ADDRESS", t =>
+        {
+            t.HasCheckConstraint("CK_address_latitude_range", "latitude BETWEEN -90 AND 90");
+            t.HasCheckConstraint("CK_address_longitude_range", "longitude BETWEEN -180 AND 180");
+        });
+
+        builder.HasQueryFilter(a => !a.IsSoftDeleted);
+    }
+}
