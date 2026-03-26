@@ -6,8 +6,6 @@ internal sealed class AddressConfiguration : IEntityTypeConfiguration<Domain.Add
 {
     public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Domain.Address.Address> builder)
     {
-        builder.ToTable("TBL_ADDRESS");
-
         builder.HasKey(u => u.Id);
 
         builder.Property(a => a.UserId)
@@ -82,7 +80,7 @@ internal sealed class AddressConfiguration : IEntityTypeConfiguration<Domain.Add
             .HasColumnName("updated_by");
 
         builder.HasOne(a => a.User)
-            .WithMany() // Or .WithMany(u => u.Addresses) if defined
+            .WithMany(u => u.Addresses)
             .HasForeignKey(a => a.UserId)
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired()

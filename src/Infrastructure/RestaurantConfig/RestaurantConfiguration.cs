@@ -86,10 +86,10 @@ internal sealed class RestaurantConfiguration : IEntityTypeConfiguration<Restaur
             .HasDefaultValueSql("false")
             .HasColumnName("is_active");
 
-        builder.Property(r => r.UberOnePartner)
+        builder.Property(r => r.CompanyPartner)
             .IsRequired()
             .HasDefaultValueSql("false")
-            .HasColumnName("uber_one_partner");
+            .HasColumnName("company_partner");
 
         builder.Property(r => r.CreatedAt)
             .HasColumnType("timestamp with time zone")

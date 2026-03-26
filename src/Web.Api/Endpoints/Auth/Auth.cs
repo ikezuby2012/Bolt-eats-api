@@ -28,7 +28,7 @@ public class Auth : IEndpoint
 
             Result<LoginSuccessDto> result = await handler.Handle(command, cancellationToken);
 
-            return result.Match(value => Results.Ok(ApiResponse<LoginSuccessDto>.Success(value, $"User loggedin successfully")), error => CustomResults.Problem(error));
+            return result.Match(value => Results.Created($"/user/{result.Value.User.Id}", ApiResponse<LoginSuccessDto>.Success(value, $"User loggedin successfully")), error => CustomResults.Problem(error));
         }).WithTags(Tags.Auth);
 
         ///

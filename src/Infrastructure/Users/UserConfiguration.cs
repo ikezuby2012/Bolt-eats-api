@@ -36,6 +36,10 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
                .HasMaxLength(512)
                .HasColumnName("PASSWORD_HASH");
 
+        builder.Property(u => u.PhoneNumber).HasMaxLength(20).HasColumnName("phone_number");
+        builder.Property(u => u.DateOfBirth).HasColumnName("date_of_birth");
+        builder.Property(u => u.ProfileImageUrl).HasMaxLength(2000).HasColumnName("profile_image_url");
+
         builder.Property(u => u.CreatedAt)
                .HasColumnName("CREATED_AT");
 
@@ -71,6 +75,12 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.IsSoftDeleted)
                 .HasColumnName("IS_SOFT_DELETED")
                 .HasDefaultValue(false);
+
+        builder.HasMany(u => u.Addresses)
+            .WithOne(a => a.User)
+            .HasForeignKey(a => a.UserId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .HasConstraintName("fk_user_addresses");
 
         builder.HasOne(u => u.UserRole)
                .WithMany()

@@ -15,6 +15,7 @@ public sealed class ApplicationDbContext(
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Domain.Address.Address> Addresses => Set<Domain.Address.Address>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
