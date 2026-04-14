@@ -4,6 +4,7 @@ using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -21,6 +22,7 @@ namespace Infrastructure.Database.Migrations
                 .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "postgis");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Domain.Address.Address", b =>
@@ -79,6 +81,10 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("latitude_raw");
 
+                    b.Property<Point>("Location")
+                        .HasColumnType("geography (point, 4326)")
+                        .HasColumnName("location");
+
                     b.Property<decimal?>("Longitude")
                         .HasColumnType("numeric(9,6)")
                         .HasColumnName("longitude");
@@ -94,6 +100,10 @@ namespace Infrastructure.Database.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("postal_code");
+
+                    b.Property<Guid?>("RestaurantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("restaurant_id");
 
                     b.Property<string>("State")
                         .IsRequired()
@@ -116,12 +126,20 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("updated_by");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
                     b.HasKey("Id")
                         .HasName("pk_tbl_address");
+
+                    b.HasIndex("Location")
+                        .HasDatabaseName("ix_tbl_address_location");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Location"), "GIST");
+
+                    b.HasIndex("RestaurantId")
+                        .HasDatabaseName("ix_tbl_address_restaurant_id");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_tbl_address_user_id");
@@ -385,6 +403,11 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_soft_deleted")
                         .HasDefaultValueSql("false");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
 
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid")
@@ -947,14 +970,16 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid?>("AddressId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("address_id");
-
                     b.Property<string>("BannerUrl")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
                         .HasColumnName("banner_url");
+
+                    b.Property<bool>("CompanyPartner")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasColumnName("company_partner")
+                        .HasDefaultValueSql("false");
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1047,12 +1072,6 @@ namespace Infrastructure.Database.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("total_reviews");
 
-                    b.Property<bool>("UberOnePartner")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasColumnName("uber_one_partner")
-                        .HasDefaultValueSql("false");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -1064,9 +1083,6 @@ namespace Infrastructure.Database.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_tbl_restaurant");
-
-                    b.HasIndex("AddressId")
-                        .HasDatabaseName("ix_tbl_restaurant_address_id");
 
                     b.HasIndex("OwnerId")
                         .HasDatabaseName("ix_tbl_restaurant_owner_id");
@@ -1403,12 +1419,19 @@ namespace Infrastructure.Database.Migrations
 
             modelBuilder.Entity("Domain.Address.Address", b =>
                 {
+                    b.HasOne("Domain.Restaurant.Restaurant", "Restaurant")
+                        .WithMany("Addresses")
+                        .HasForeignKey("RestaurantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_restaurant_address");
+
                     b.HasOne("Domain.Users.User", "User")
                         .WithMany("Addresses")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("fk_user_addresses");
+
+                    b.Navigation("Restaurant");
 
                     b.Navigation("User");
                 });
@@ -1558,20 +1581,12 @@ namespace Infrastructure.Database.Migrations
 
             modelBuilder.Entity("Domain.Restaurant.Restaurant", b =>
                 {
-                    b.HasOne("Domain.Address.Address", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_restaurant_address");
-
                     b.HasOne("Domain.Users.User", "Owner")
                         .WithMany()
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_restaurant_owner");
-
-                    b.Navigation("Address");
 
                     b.Navigation("Owner");
                 });
@@ -1635,6 +1650,11 @@ namespace Infrastructure.Database.Migrations
                         .HasConstraintName("fk_tbl_users_user_role_role_id");
 
                     b.Navigation("UserRole");
+                });
+
+            modelBuilder.Entity("Domain.Restaurant.Restaurant", b =>
+                {
+                    b.Navigation("Addresses");
                 });
 
             modelBuilder.Entity("Domain.Users.User", b =>

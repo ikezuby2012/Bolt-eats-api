@@ -18,5 +18,5 @@ public sealed class User : Auditable<Guid>
     public string? CreatedById { get; set; }
     public bool IsActive { get; set; } = true;
     public bool isVerifed { get; set; }
-    public ICollection<Address.Address>? Addresses { get; set; }
+    public ICollection<Address.Address>? Addresses { get; set; } = new List<Address.Address>();
 }

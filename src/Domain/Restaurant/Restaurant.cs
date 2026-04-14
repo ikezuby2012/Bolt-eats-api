@@ -14,8 +14,6 @@ public sealed class Restaurant : Auditable<Guid>
     public string? BannerUrl { get; set; }
     public string PhoneNumber { get; set; }
     public string? Email { get; set; }
-    public Guid? AddressId { get; set; }
-    public Address.Address Address { get; set; }
     public double Rating { get; set; }
     public int TotalReviews { get; set; }
     public decimal? DeliveryFeeMin { get; set; }
@@ -25,5 +23,6 @@ public sealed class Restaurant : Auditable<Guid>
     public int? EstDeliveryMax { get; set; }
     public bool IsOpen { get; set; }
     public bool IsActive { get; set; }
-    public bool UberOnePartner { get; set; }
+    public bool CompanyPartner { get; set; }
+    public ICollection<Address.Address> Addresses { get; set; } = new List<Address.Address>();
 }

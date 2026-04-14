@@ -45,9 +45,6 @@ internal sealed class RestaurantConfiguration : IEntityTypeConfiguration<Restaur
             .HasMaxLength(255)
             .HasColumnName("email");
 
-        builder.Property(r => r.AddressId)
-            .HasColumnName("address_id");
-
         builder.Property(r => r.Rating)
             .IsRequired()
             .HasDefaultValue(0)
@@ -119,11 +116,10 @@ internal sealed class RestaurantConfiguration : IEntityTypeConfiguration<Restaur
            .IsRequired()
            .HasConstraintName("fk_restaurant_owner");
 
-        builder.HasOne(r => r.Address)
-            .WithMany()
-            .HasForeignKey(r => r.AddressId)
-            .OnDelete(DeleteBehavior.SetNull)
-            .IsRequired(false)
+        builder.HasMany(u => u.Addresses)
+            .WithOne(a => a.Restaurant)
+            .HasForeignKey(a => a.RestaurantId)
+            .OnDelete(DeleteBehavior.Cascade)
             .HasConstraintName("fk_restaurant_address");
 
         builder.HasIndex(r => new { r.IsActive, r.IsOpen })

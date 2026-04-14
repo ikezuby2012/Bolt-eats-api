@@ -1,5 +1,4 @@
-﻿using Domain.Restaurant;
-using Domain.Users;
+﻿using Domain.Users;
 using SharedKernel;
 
 namespace Domain.Review;

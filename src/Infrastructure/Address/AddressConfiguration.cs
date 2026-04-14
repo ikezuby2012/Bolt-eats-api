@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SharedKernel;
 
 namespace Infrastructure.Address;
 
@@ -9,7 +10,6 @@ internal sealed class AddressConfiguration : IEntityTypeConfiguration<Domain.Add
         builder.HasKey(u => u.Id);
 
         builder.Property(a => a.UserId)
-            .IsRequired()
             .HasColumnName("user_id");
 
         builder.Property(a => a.Label)
@@ -83,8 +83,12 @@ internal sealed class AddressConfiguration : IEntityTypeConfiguration<Domain.Add
             .WithMany(u => u.Addresses)
             .HasForeignKey(a => a.UserId)
             .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired()
             .HasConstraintName("fk_address_user");
+
+        builder.HasOne(a => a.Restaurant)
+            .WithMany(r => r.Addresses)
+            .HasForeignKey(a => a.RestaurantId)
+            .OnDelete(DeleteBehavior.Cascade).HasConstraintName("fk_address_restaurant");
 
         builder.HasIndex(a => a.UserId)
             .HasDatabaseName("ix_tbl_address_user_id");
@@ -99,6 +103,11 @@ internal sealed class AddressConfiguration : IEntityTypeConfiguration<Domain.Add
             t.HasCheckConstraint("CK_address_latitude_range", "latitude BETWEEN -90 AND 90");
             t.HasCheckConstraint("CK_address_longitude_range", "longitude BETWEEN -180 AND 180");
         });
+
+        builder.HasIndex(a => a.Location).HasMethod("GIST"); 
+
+        builder.Property(a => a.Location)
+               .HasColumnType("geography (point, 4326)");
 
         builder.HasQueryFilter(a => !a.IsSoftDeleted);
     }

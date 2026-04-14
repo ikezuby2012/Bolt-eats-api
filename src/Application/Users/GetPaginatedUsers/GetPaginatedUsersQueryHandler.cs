@@ -38,7 +38,7 @@ internal sealed class GetPaginatedUsersQueryHandler(IApplicationDbContext contex
                 Addresses = (user.Addresses ?? Enumerable.Empty<Address>()).Select(address => new AddressDto
                 {
                     Id = address.Id,
-                    UserId = address.UserId,
+                    UserId = address.UserId ?? Guid.NewGuid(),
                     Label = address.Label,
                     Street = address.Street,
                     City = address.City,

@@ -16,6 +16,10 @@ public sealed class ApplicationDbContext(
     public DbSet<User> Users => Set<User>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Domain.Address.Address> Addresses => Set<Domain.Address.Address>();
+    public DbSet<Domain.Restaurant.Restaurant> Restaurants => Set<Domain.Restaurant.Restaurant>();
+    public DbSet<Domain.Category.Category> Category => Set<Domain.Category.Category>();
+    public DbSet<Domain.MenuItem.MenuItem> MenuItem => Set<Domain.MenuItem.MenuItem>();
+    public DbSet<Domain.Review.Review> Review => Set<Domain.Review.Review>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
