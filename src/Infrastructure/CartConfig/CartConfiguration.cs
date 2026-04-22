@@ -40,6 +40,10 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
             .HasMaxLength(100)
             .HasColumnName("updated_by");
 
+        builder.Property(c => c.PromoDiscount).HasColumnType("numeric(18,2)").HasColumnName("promo_discount");
+
+        builder.Property(c => c.PromoDiscountType).HasColumnName("promo_discount_type");
+
         builder.Property(c => c.IsSoftDeleted)
             .IsRequired()
             .HasDefaultValueSql("false")
@@ -58,6 +62,12 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired()
             .HasConstraintName("fk_cart_user");
+
+        builder.HasMany(u => u.Items)
+           .WithOne(a => a.Cart)
+           .HasForeignKey(a => a.CartId)
+           .OnDelete(DeleteBehavior.Cascade)
+           .HasConstraintName("fk_cart_items");
 
         builder.HasQueryFilter(c => !c.IsSoftDeleted);
     }

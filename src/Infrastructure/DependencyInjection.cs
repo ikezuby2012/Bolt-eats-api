@@ -43,7 +43,8 @@ public static class DependencyInjection
 
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IHttpContextService, HttpContextService>();
-
+        services.AddScoped<IPromoCodeService, PromoCodeService>();
+        services.AddScoped<ICartService, CartService>();
 
         return services;
     }
@@ -56,7 +57,7 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString, npgsqlOptions =>
             {
                 npgsqlOptions
-                    .UseNetTopologySuite() 
+                    .UseNetTopologySuite()
                     .MigrationsHistoryTable(
                         HistoryRepository.DefaultTableName,
                         Schemas.Default

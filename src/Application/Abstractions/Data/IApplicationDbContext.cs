@@ -14,5 +14,9 @@ public interface IApplicationDbContext
     DbSet<Domain.Category.Category> Category { get; }
     DbSet<Domain.MenuItem.MenuItem> MenuItem { get; }
     DbSet<Domain.Review.Review> Review { get; }
+    DbSet<Domain.Cart.Cart> Cart { get; }
+    DbSet<Domain.Cart.CartItem> CartItems { get; }
+    DbSet<Domain.PromoCode.PromoCode> PromoCode { get; }
+    DbSet<Domain.PromoCode.PromoCodeUsage> PromoCodeUsages { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

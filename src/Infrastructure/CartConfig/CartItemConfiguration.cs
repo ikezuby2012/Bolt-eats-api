@@ -52,7 +52,7 @@ internal sealed class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
             .HasColumnName("updated_by");
 
         builder.HasOne(c => c.Cart)
-            .WithMany()
+            .WithMany(c => c.Items)
             .HasForeignKey(c => c.CartId)
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired()

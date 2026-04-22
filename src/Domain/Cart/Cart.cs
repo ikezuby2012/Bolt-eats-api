@@ -11,5 +11,7 @@ public sealed class Cart : Auditable<Guid>
     public Guid RestaurantId { get; set; }
     public Restaurant.Restaurant Restaurant { get; set; }
     public string? PromoCode { get; set; }
-
+    public decimal? PromoDiscount { get; set; }
+    public string? PromoDiscountType { get; set; }
+    public ICollection<CartItem> Items { get; set; } = [];
 }

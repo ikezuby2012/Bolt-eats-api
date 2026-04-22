@@ -1,6 +1,7 @@
 ﻿using SharedKernel;
 
 namespace Domain.Users;
+
 public sealed class UserRole : Enumeration<UserRole>
 {
     public static readonly UserRole User = new(1, "User");

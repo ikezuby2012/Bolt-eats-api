@@ -66,17 +66,24 @@ internal sealed class PromoCodeConfiguration : IEntityTypeConfiguration<PromoCod
 
         builder.Property(pc => pc.MinOrderValue)
             .HasColumnType("numeric(10,2)")
-            .IsRequired()
             .HasDefaultValue(0)
             .HasColumnName("min_order_value");
 
+        builder.Property(pc => pc.MaxDiscountCap).HasColumnType("numeric(18,2)").HasColumnName("max_discount_cap");
+
         builder.Property(pc => pc.UsageLimit)
             .HasColumnName("usage_limit");
+
+        builder.Property(pc => pc.UsageLimitPerUser).HasColumnName("usage_limit_per_user");
 
         builder.Property(pc => pc.UsageCount)
             .IsRequired()
             .HasDefaultValue(0)
             .HasColumnName("usage_count");
+
+        builder.Property(pc => pc.StartsAt)
+            .HasColumnType("timestamp with time zone")
+            .HasColumnName("starts_at");
 
         builder.Property(pc => pc.ExpiresAt)
             .HasColumnType("timestamp with time zone")
@@ -108,10 +115,21 @@ internal sealed class PromoCodeConfiguration : IEntityTypeConfiguration<PromoCod
             .HasDefaultValueSql("false")
             .HasColumnName("is_soft_deleted");
 
+        builder.Property(pc => pc.RestaurantId).HasColumnName("restaurant_id");
+
+        builder.HasOne(a => a.Restaurant)
+            .WithMany()
+            .HasForeignKey(a => a.RestaurantId)
+            .OnDelete(DeleteBehavior.Cascade).HasConstraintName("fk_promo_restaurant");
+
         builder.HasIndex(pc => pc.Code)
             .IsUnique()
             .HasDatabaseName("x_tbl_promo_code_code_unique")
             .HasFilter("is_soft_deleted = false AND is_active = true");
+
+        builder.HasMany(pc => pc.Usages).WithOne(x => x.PromoCode).HasForeignKey(a => a.PromoCodeId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .HasConstraintName("fk_promo_usages");
 
         builder.HasQueryFilter(r => !r.IsSoftDeleted);
     }

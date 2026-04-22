@@ -1,6 +1,8 @@
 ﻿using System.Linq.Expressions;
 using Application.Abstractions.Data;
 using Domain.Auth;
+using Domain.Cart;
+using Domain.PromoCode;
 using Domain.Users;
 using Infrastructure.DomainEvents;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +22,10 @@ public sealed class ApplicationDbContext(
     public DbSet<Domain.Category.Category> Category => Set<Domain.Category.Category>();
     public DbSet<Domain.MenuItem.MenuItem> MenuItem => Set<Domain.MenuItem.MenuItem>();
     public DbSet<Domain.Review.Review> Review => Set<Domain.Review.Review>();
+    public DbSet<Cart> Cart => Set<Cart>();
+    public DbSet<CartItem> CartItems => Set<CartItem>();
+    public DbSet<PromoCode> PromoCode => Set<PromoCode>();
+    public DbSet<PromoCodeUsage> PromoCodeUsages => Set<PromoCodeUsage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
