@@ -15,6 +15,7 @@ internal sealed class PromoCodeUsageConfiguration : IEntityTypeConfiguration<Pro
         builder.Property(u => u.StatusId).HasDefaultValue(Domain.PromoCode.PromoUsageStatus.Pending.Id).HasColumnName("status_id");
         builder.Property(u => u.UserId).IsRequired().HasColumnName("user_id");
         builder.Property(u => u.PromoCodeId).IsRequired().HasColumnName("promo_code_id");
+        builder.Property(u => u.TimesUsed).HasColumnName("times_used");
 
         builder.HasOne(u => u.PromoCode)
            .WithMany(p => p.Usages)

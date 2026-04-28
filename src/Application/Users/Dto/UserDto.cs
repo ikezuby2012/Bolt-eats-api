@@ -55,7 +55,7 @@ public sealed class UserDto
         IsActive = user.IsActive,
         IsVerified = user.isVerifed,
         RoleId = user.RoleId,
-        UserRole = user.RoleId.HasValue ? Domain.Users.UserRole.FromValue(user.RoleId.Value)!.Name : "User",
+        UserRole = Domain.Users.UserRole.FromValue(user.RoleId)!.Name,
         LastLogin = user.LastLogin,
         CreatedAt = user.CreatedAt,
         UpdatedAt = user.UpdatedAt,

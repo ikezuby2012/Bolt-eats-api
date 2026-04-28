@@ -12,11 +12,12 @@ public sealed class User : Auditable<Guid>
     public string? ProfileImageUrl { get; set; }
     public DateTime? DateOfBirth { get; set; }
     public string OTP { get; set; }
-    public int? RoleId { get; set; }
+    public int RoleId { get; set; }
     public UserRole? UserRole { get; set; }
     public DateTime? LastLogin { get; set; }
     public string? CreatedById { get; set; }
     public bool IsActive { get; set; } = true;
     public bool isVerifed { get; set; }
+    public bool IsOnline { get; set; }
     public ICollection<Address.Address>? Addresses { get; set; } = new List<Address.Address>();
 }

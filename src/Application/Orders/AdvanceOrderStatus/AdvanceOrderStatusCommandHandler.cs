@@ -1,0 +1,98 @@
+﻿using Application.Abstractions.Authentication;
+using Application.Abstractions.Data;
+using Application.Abstractions.Messaging;
+using Application.Orders.Dto;
+using Domain.Common;
+using Domain.Order;
+using Domain.Users;
+using Microsoft.EntityFrameworkCore;
+using SharedKernel;
+
+namespace Application.Orders.AdvanceOrderStatus;
+
+internal sealed class AdvanceOrderStatusCommandHandler(IApplicationDbContext context, IUserContext userContext) : ICommandHandler<AdvanceOrderStatusCommand, OrderDto>
+{
+    public async Task<Result<OrderDto>> Handle(AdvanceOrderStatusCommand command, CancellationToken cancellationToken)
+    {
+        Guid userId = userContext.UserId;
+        Domain.Order.Order? order = await context.Order
+            .Include(o => o.Restaurant)
+            .Include(o => o.Items)
+            .Include(o => o.Rider)
+            .Include(o => o.Address)
+            .FirstOrDefaultAsync(o => o.Id == command.OrderId, cancellationToken);
+
+        if (order is null)
+        {
+            return Result.Failure<OrderDto>(CommonErrors.CustomErrorMessage("No Order was found"));
+        }
+
+        /// check if its the owner
+        Domain.Users.User? customer = await context.Users
+           .Include(u => u.Addresses)
+           .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+
+        if (customer is null)
+        {
+            return Result.Failure<OrderDto>(CommonErrors.CustomErrorMessage("No User was found"));
+        }
+
+        if (customer.RoleId == UserRole.BusinessOwner.Id)
+        {
+            bool ownsRestaurant = await context.Restaurants.AnyAsync(
+                r => r.Id == order.RestaurantId && r.OwnerId == userId,
+                cancellationToken);
+
+            if (!ownsRestaurant)
+            {
+                return Result.Failure<OrderDto>(CommonErrors.CustomErrorMessage("No Order was found"));
+            }
+        }
+
+        if (customer.RoleId == UserRole.Rider.Id && order.RiderId != userId)
+        {
+            return Result.Failure<OrderDto>(CommonErrors.CustomErrorMessage("this order is not assigned to you."));
+        }
+        string userRole = UserRole.FromValue(customer.RoleId)!.Name;
+        var orderStatus = EOrderStatus.FromName(command.Status);
+
+        if (!OrderStateMachine.CanTransition(userRole, EOrderStatus.FromValue(order.OrderStatusId)!, orderStatus!))
+        {
+            var allowed = OrderStateMachine
+               .AllowedNext(userRole, EOrderStatus.FromValue(order.OrderStatusId)!)
+               .ToList();
+
+            string hint = allowed.Any()
+                ? $" Allowed next: {string.Join(", ", allowed)}."
+                : " No further transitions are allowed from this status.";
+
+            return Result.Failure<OrderDto>(CommonErrors.CustomErrorMessage($"Cannot transition from {EOrderStatus.FromValue(order.OrderStatusId)!.Name} to {EOrderStatus.FromName(command.Status)!.Name}.{hint}"));
+        }
+
+        order.OrderStatusId = EOrderStatus.FromName(command.Status)!.Id;
+
+        switch (orderStatus)
+        {
+            case EOrderStatus status when status == EOrderStatus.Accepted:
+                order.AcceptedAt = DateTime.UtcNow;
+                break;
+            //case EOrderStatus status when status == EOrderStatus.Preparing:
+            //    order.PreparingAt = DateTime.UtcNow;
+            //    break;
+            case EOrderStatus status when status == EOrderStatus.ReadyForPickup:
+                order.PickedUpAt = DateTime.UtcNow;
+                break;
+            case EOrderStatus status when status == EOrderStatus.Refunded:
+                order.RefundedAt = DateTime.UtcNow;
+                break;
+            case EOrderStatus status when status == EOrderStatus.Delivered:
+                order.DeliveredAt = DateTime.UtcNow;
+                break;
+        }
+
+        await context.SaveChangesAsync(cancellationToken);
+
+        return Result.Success((OrderDto)order);
+    }
+}
+

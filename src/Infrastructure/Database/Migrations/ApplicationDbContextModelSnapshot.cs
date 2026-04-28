@@ -272,6 +272,14 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("promo_code");
 
+                    b.Property<decimal?>("PromoDiscount")
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("promo_discount");
+
+                    b.Property<string>("PromoDiscountType")
+                        .HasColumnType("text")
+                        .HasColumnName("promo_discount_type");
+
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid")
                         .HasColumnName("restaurant_id");
@@ -637,6 +645,15 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("address_id");
 
+                    b.Property<string>("CancellationNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("cancellation_notes");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cancelled_at");
+
                     b.Property<DateTime?>("CheckoutAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("checkout_at");
@@ -698,6 +715,10 @@ namespace Infrastructure.Database.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("promo_code");
+
+                    b.Property<DateTime?>("RefundedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("refunded_at");
 
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid")
@@ -812,6 +833,10 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("order_id");
 
+                    b.Property<Guid?>("OrderId1")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id1");
+
                     b.Property<int>("Quantity")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -839,6 +864,9 @@ namespace Infrastructure.Database.Migrations
 
                     b.HasIndex("OrderId")
                         .HasDatabaseName("ix_tbl_order_item_order_id");
+
+                    b.HasIndex("OrderId1")
+                        .HasDatabaseName("ix_tbl_order_item_order_id1");
 
                     b.ToTable("tbl_order_item", "public", t =>
                         {
@@ -910,11 +938,21 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("numeric(12,2)")
                         .HasColumnName("max_discount");
 
-                    b.Property<decimal>("MinOrderValue")
-                        .ValueGeneratedOnAdd()
+                    b.Property<decimal?>("MaxDiscountCap")
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("max_discount_cap");
+
+                    b.Property<decimal?>("MinOrderValue")
                         .HasColumnType("numeric(10,2)")
-                        .HasDefaultValue(0m)
                         .HasColumnName("min_order_value");
+
+                    b.Property<Guid?>("RestaurantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("restaurant_id");
+
+                    b.Property<DateTime?>("StartsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("starts_at");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -935,6 +973,10 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("usage_limit");
 
+                    b.Property<int?>("UsageLimitPerUser")
+                        .HasColumnType("integer")
+                        .HasColumnName("usage_limit_per_user");
+
                     b.HasKey("Id")
                         .HasName("pk_tbl_promo_codes");
 
@@ -942,6 +984,9 @@ namespace Infrastructure.Database.Migrations
                         .IsUnique()
                         .HasDatabaseName("x_tbl_promo_code_code_unique")
                         .HasFilter("is_soft_deleted = false AND is_active = true");
+
+                    b.HasIndex("RestaurantId")
+                        .HasDatabaseName("ix_tbl_promo_codes_restaurant_id");
 
                     b.ToTable("tbl_promo_codes", "public", t =>
                         {
@@ -960,6 +1005,112 @@ namespace Infrastructure.Database.Migrations
                             t.HasCheckConstraint("ck_promo_code_usage_count_valid", "usage_count >= 0 AND (usage_limit IS NULL OR usage_count <= usage_limit)");
 
                             t.HasCheckConstraint("ck_promo_code_usage_limit_positive", "usage_limit > 0 OR usage_limit IS NULL");
+                        });
+                });
+
+            modelBuilder.Entity("Domain.PromoCode.PromoCodeUsage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<decimal>("DiscountApplied")
+                        .HasColumnType("numeric")
+                        .HasColumnName("discount_applied");
+
+                    b.Property<bool>("IsSoftDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_soft_deleted");
+
+                    b.Property<Guid>("PromoCodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("promo_code_id");
+
+                    b.Property<DateTime?>("RedeemedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("redeemed_at");
+
+                    b.Property<int>("StatusId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1)
+                        .HasColumnName("status_id");
+
+                    b.Property<int>("TimesUsed")
+                        .HasColumnType("integer")
+                        .HasColumnName("times_used");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_promo_code_usages");
+
+                    b.HasIndex("StatusId")
+                        .HasDatabaseName("ix_promo_code_usages_status_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_promo_code_usages_user_id");
+
+                    b.HasIndex("PromoCodeId", "UserId")
+                        .HasDatabaseName("ix_promo_code_usages_promo_code_id_user_id");
+
+                    b.ToTable("promo_code_usages", "public");
+                });
+
+            modelBuilder.Entity("Domain.PromoCode.PromoUsageStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tbl_promo_usage_status");
+
+                    b.ToTable("TBL_PROMO_USAGE_STATUS", "public");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Pending"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Redeemed"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Cancelled"
                         });
                 });
 
@@ -1304,6 +1455,12 @@ namespace Infrastructure.Database.Migrations
                         .HasDefaultValue(true)
                         .HasColumnName("IS_ACTIVE");
 
+                    b.Property<bool>("IsOnline")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IS_ONLINE");
+
                     b.Property<bool>("IsSoftDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -1342,8 +1499,10 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("profile_image_url");
 
-                    b.Property<int?>("RoleId")
+                    b.Property<int>("RoleId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
+                        .HasDefaultValue(1)
                         .HasColumnName("ROLE_ID");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -1414,6 +1573,11 @@ namespace Infrastructure.Database.Migrations
                         {
                             Id = 4,
                             Name = "Rider"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Business_Owner"
                         });
                 });
 
@@ -1460,7 +1624,7 @@ namespace Infrastructure.Database.Migrations
             modelBuilder.Entity("Domain.Cart.CartItem", b =>
                 {
                     b.HasOne("Domain.Cart.Cart", "Cart")
-                        .WithMany()
+                        .WithMany("Items")
                         .HasForeignKey("CartId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -1574,9 +1738,55 @@ namespace Infrastructure.Database.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_order_item_order");
 
+                    b.HasOne("Domain.Order.Order", null)
+                        .WithMany("Items")
+                        .HasForeignKey("OrderId1")
+                        .HasConstraintName("fk_tbl_order_item_tbl_order_order_id1");
+
                     b.Navigation("MenuItem");
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("Domain.PromoCode.PromoCode", b =>
+                {
+                    b.HasOne("Domain.Restaurant.Restaurant", "Restaurant")
+                        .WithMany()
+                        .HasForeignKey("RestaurantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_promo_restaurant");
+
+                    b.Navigation("Restaurant");
+                });
+
+            modelBuilder.Entity("Domain.PromoCode.PromoCodeUsage", b =>
+                {
+                    b.HasOne("Domain.PromoCode.PromoCode", "PromoCode")
+                        .WithMany("Usages")
+                        .HasForeignKey("PromoCodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_promo_usages");
+
+                    b.HasOne("Domain.PromoCode.PromoUsageStatus", "Status")
+                        .WithMany()
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_promo_code_usages_promo_usage_status_status_id");
+
+                    b.HasOne("Domain.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_promo_code_usages_users_user_id");
+
+                    b.Navigation("PromoCode");
+
+                    b.Navigation("Status");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Restaurant.Restaurant", b =>
@@ -1647,9 +1857,25 @@ namespace Infrastructure.Database.Migrations
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
                         .HasConstraintName("fk_tbl_users_user_role_role_id");
 
                     b.Navigation("UserRole");
+                });
+
+            modelBuilder.Entity("Domain.Cart.Cart", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Domain.Order.Order", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Domain.PromoCode.PromoCode", b =>
+                {
+                    b.Navigation("Usages");
                 });
 
             modelBuilder.Entity("Domain.Restaurant.Restaurant", b =>

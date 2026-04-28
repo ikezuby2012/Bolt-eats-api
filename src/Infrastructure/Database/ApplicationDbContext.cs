@@ -2,6 +2,7 @@
 using Application.Abstractions.Data;
 using Domain.Auth;
 using Domain.Cart;
+using Domain.Order;
 using Domain.PromoCode;
 using Domain.Users;
 using Infrastructure.DomainEvents;
@@ -26,6 +27,7 @@ public sealed class ApplicationDbContext(
     public DbSet<CartItem> CartItems => Set<CartItem>();
     public DbSet<PromoCode> PromoCode => Set<PromoCode>();
     public DbSet<PromoCodeUsage> PromoCodeUsages => Set<PromoCodeUsage>();
+    public DbSet<Order> Order => Set<Order>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

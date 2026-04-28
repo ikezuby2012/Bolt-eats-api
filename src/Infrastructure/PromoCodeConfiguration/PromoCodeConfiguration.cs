@@ -66,7 +66,7 @@ internal sealed class PromoCodeConfiguration : IEntityTypeConfiguration<PromoCod
 
         builder.Property(pc => pc.MinOrderValue)
             .HasColumnType("numeric(10,2)")
-            .HasDefaultValue(0)
+            //.HasDefaultValue(0)
             .HasColumnName("min_order_value");
 
         builder.Property(pc => pc.MaxDiscountCap).HasColumnType("numeric(18,2)").HasColumnName("max_discount_cap");

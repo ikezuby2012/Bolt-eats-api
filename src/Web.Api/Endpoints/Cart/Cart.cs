@@ -32,7 +32,7 @@ public class Cart : IEndpoint
             Result<PaginatedResult<CartDto>> result = await handler.Handle(query, cancellationToken);
 
             return result.Match(value => Results.Ok(ApiResponse<PaginatedResult<CartDto>>.Success(value, "All User Carts")), error => CustomResults.Problem(error));
-        }).WithTags(Tags.Restaurant).RequireAuthorization().WithName("GetCart").Produces<PaginatedResult<CartDto>>();
+        }).WithTags(Tags.Cart).RequireAuthorization().WithName("GetCart").Produces<PaginatedResult<CartDto>>();
 
         app.MapGet("cart/summary", async (IQueryHandler<GetCartSummaryQuery, CartSummaryDto> handler, CancellationToken cancellationToken) =>
         {
@@ -41,7 +41,7 @@ public class Cart : IEndpoint
             Result<CartSummaryDto> result = await handler.Handle(query, cancellationToken);
 
             return result.Match(value => Results.Ok(ApiResponse<CartSummaryDto>.Success(value, "All User Cart Summary")), error => CustomResults.Problem(error));
-        }).WithTags(Tags.Restaurant).RequireAuthorization().WithName("GetCartSummary").Produces<CartSummaryDto>();
+        }).WithTags(Tags.Cart).RequireAuthorization().WithName("GetCartSummary").Produces<CartSummaryDto>();
 
         //**
         //Cart Items
@@ -54,7 +54,7 @@ public class Cart : IEndpoint
             Result<CartDto> result = await handler.Handle(query, cancellationToken);
 
             return result.Match(value => Results.Ok(ApiResponse<CartDto>.Success(value, "Cart Item created successfully")), error => CustomResults.Problem(error));
-        }).WithTags(Tags.Restaurant).RequireAuthorization().WithName("AddCartItem").Produces<CartDto>();
+        }).WithTags(Tags.Cart).RequireAuthorization().WithName("AddCartItem").Produces<CartDto>();
 
         app.MapPut("cart/items/{itemId:guid}", async (Guid itemId, [FromBody] UpdateCartItemRequest param, ICommandHandler<UpdateCartItemCommand, CartDto> handler, CancellationToken cancellationToken) =>
         {
@@ -63,7 +63,7 @@ public class Cart : IEndpoint
             Result<CartDto> result = await handler.Handle(query, cancellationToken);
 
             return result.Match(value => Results.Ok(ApiResponse<CartDto>.Success(value, "Cart Item updated successfully")), error => CustomResults.Problem(error));
-        }).WithTags(Tags.Restaurant).RequireAuthorization().WithName("UpdateCartItem").Produces<CartDto>().Produces(404);
+        }).WithTags(Tags.Cart).RequireAuthorization().WithName("UpdateCartItem").Produces<CartDto>().Produces(404);
 
         app.MapDelete("cart/items/{itemId:guid}", async (Guid itemId, ICommandHandler<DeleteCartItemCommand, CartDto> handler, CancellationToken cancellationToken) =>
         {
@@ -72,7 +72,7 @@ public class Cart : IEndpoint
             Result<CartDto> result = await handler.Handle(query, cancellationToken);
 
             return result.Match(value => Results.Ok(ApiResponse<CartDto>.Success(value, "Cart Item deleted successfully")), error => CustomResults.Problem(error));
-        }).WithTags(Tags.Restaurant).RequireAuthorization().WithName("DeleteCartItem").Produces<CartDto>().Produces(404);
+        }).WithTags(Tags.Cart).RequireAuthorization().WithName("DeleteCartItem").Produces<CartDto>().Produces(404);
 
         app.MapDelete("cart/{CartId:guid}", async (Guid CartId, ICommandHandler<ClearCartCommand> handler, CancellationToken cancellationToken) =>
         {
@@ -83,7 +83,7 @@ public class Cart : IEndpoint
             return result.Match(
                  () => Results.NoContent(),
                  error => CustomResults.Problem(error));
-        }).WithTags(Tags.Restaurant).RequireAuthorization().WithName("ClearCart").Produces<CartDto>().Produces(204);
+        }).WithTags(Tags.Cart).RequireAuthorization().WithName("ClearCart").Produces<CartDto>().Produces(204);
 
 
         //**
@@ -97,7 +97,7 @@ public class Cart : IEndpoint
             Result<CartSummaryDto> result = await handler.Handle(query, cancellationToken);
 
             return result.Match(value => Results.Ok(ApiResponse<CartSummaryDto>.Success(value, "Promo code applied to cart successfully")), error => CustomResults.Problem(error));
-        }).WithTags(Tags.Restaurant).RequireAuthorization().WithName("ApplyPromoCode").Produces<CartDto>().Produces(404);
+        }).WithTags(Tags.Cart).RequireAuthorization().WithName("ApplyPromoCode").Produces<CartDto>().Produces(404);
 
         app.MapDelete("cart/{cartId:guid}/promo", async (Guid cartId, ICommandHandler<RemovePromoCodeCommand, CartSummaryDto> handler, CancellationToken cancellationToken) =>
         {
@@ -106,7 +106,7 @@ public class Cart : IEndpoint
             Result<CartSummaryDto> result = await handler.Handle(query, cancellationToken);
 
             return result.Match(value => Results.Ok(ApiResponse<CartSummaryDto>.Success(value, "Promo code removed from cart successfully")), error => CustomResults.Problem(error));
-        }).WithTags(Tags.Restaurant).RequireAuthorization().WithName("RemovePromoCode").Produces<CartDto>().Produces(404);
+        }).WithTags(Tags.Cart).RequireAuthorization().WithName("RemovePromoCode").Produces<CartDto>().Produces(404);
     }
 }
 

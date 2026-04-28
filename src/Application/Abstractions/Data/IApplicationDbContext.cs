@@ -18,5 +18,6 @@ public interface IApplicationDbContext
     DbSet<Domain.Cart.CartItem> CartItems { get; }
     DbSet<Domain.PromoCode.PromoCode> PromoCode { get; }
     DbSet<Domain.PromoCode.PromoCodeUsage> PromoCodeUsages { get; }
+    DbSet<Domain.Order.Order> Order { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

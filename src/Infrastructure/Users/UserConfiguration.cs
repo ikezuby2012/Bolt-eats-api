@@ -58,11 +58,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
                .HasColumnName("LAST_LOGIN");
 
         builder.Property(u => u.RoleId)
-               .HasColumnName("ROLE_ID");
-
-        builder.Property(u => u.IsActive)
-               .HasColumnName("IS_ACTIVE")
-               .HasDefaultValue(true);
+               .HasColumnName("ROLE_ID").HasDefaultValue(1);
 
         builder.Property(u => u.isVerifed)
                .HasColumnName("IS_VERIFIED")
@@ -71,6 +67,8 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.IsActive)
               .HasColumnName("IS_ACTIVE")
               .HasDefaultValue(true);
+
+        builder.Property(u => u.IsOnline).HasColumnName("IS_ONLINE").HasDefaultValue(false);
 
         builder.Property(u => u.IsSoftDeleted)
                 .HasColumnName("IS_SOFT_DELETED")

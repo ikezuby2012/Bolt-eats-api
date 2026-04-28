@@ -22,7 +22,7 @@ public class CreatedUserDto
         FirstName = user.FirstName,
         LastName = user.LastName,
         OTP = user.OTP,
-        RoleName = UserRole.FromValue((int)user.RoleId!)?.Name!,
+        RoleName = UserRole.FromValue(user.RoleId!)?.Name!,
         CreatedAt = user.CreatedAt,
         UpdatedAt = user.UpdatedAt,
         IsActive = user.IsActive,

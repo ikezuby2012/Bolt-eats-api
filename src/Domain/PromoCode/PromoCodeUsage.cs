@@ -15,4 +15,5 @@ public class PromoCodeUsage : Auditable<Guid>
     public PromoUsageStatus Status { get; set; }
     public decimal DiscountApplied { get; set; }
     public DateTime? RedeemedAt { get; set; }
+    public int TimesUsed { get; set; }
 }

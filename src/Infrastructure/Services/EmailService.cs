@@ -24,7 +24,7 @@ internal class EmailService : IEmailService
         using var client = new SmtpClient();
         client.CheckCertificateRevocation = false;
         await client.ConnectAsync("smtp.office365.com", 587, MailKit.Security.SecureSocketOptions.StartTls, cancellationToken);
-        await client.AuthenticateAsync(_configuration["Email:FromEmail"], _configuration["Email:Password"], cancellationToken);
+        await client.AuthenticateAsync(_configuration["Email:FromEmail"]!, _configuration["Email:Password"]!, cancellationToken);
 
         await client.SendAsync(message, cancellationToken);
         await client.DisconnectAsync(true, cancellationToken);

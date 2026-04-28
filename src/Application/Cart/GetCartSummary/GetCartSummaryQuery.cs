@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Application.Abstractions.Messaging;
+using Domain.Cart;
 
 namespace Application.Cart.GetCartSummary;
-internal class GetCartSummaryQuery
-{
-}
+
+public sealed record GetCartSummaryQuery() : IQuery<CartSummaryDto>;

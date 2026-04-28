@@ -18,4 +18,24 @@ public sealed class EOrderStatus : Enumeration<EOrderStatus>
     {
         Description = description;
     }
+
+    public static List<string> GetNames()
+    {
+        return GetValues().Select(x => x.Name).ToList();
+    }
+
+    public static bool IsValidName(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        { return false; }
+
+        return GetValues()
+            .Any(x => x.Name.Equals(input, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public static EOrderStatus? FromNameOrDefault(string input)
+    {
+        return GetValues()
+            .FirstOrDefault(x => x.Name.Equals(input, StringComparison.OrdinalIgnoreCase));
+    }
 }

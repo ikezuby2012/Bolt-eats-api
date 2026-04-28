@@ -30,7 +30,7 @@ internal sealed class GetPaginatedUsersQueryHandler(IApplicationDbContext contex
                 IsActive = user.IsActive,
                 IsVerified = user.isVerifed,
                 RoleId = user.RoleId,
-                UserRole = user.RoleId.HasValue ? UserRole.FromValue(user.RoleId.Value)!.Name : "User",
+                UserRole = UserRole.FromValue(user.RoleId)!.Name,
                 LastLogin = user.LastLogin,
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt,

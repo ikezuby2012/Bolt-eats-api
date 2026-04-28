@@ -3,8 +3,11 @@ using Application.Abstractions.Authentication;
 using Application.Abstractions.Data;
 using Application.Abstractions.Interface;
 using Application.Abstractions.Services;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Infrastructure.Authentication;
 using Infrastructure.Authorization;
+using Infrastructure.BackgroundJobs;
 using Infrastructure.Database;
 using Infrastructure.DomainEvents;
 using Infrastructure.Services;
@@ -28,6 +31,7 @@ public static class DependencyInjection
         IConfiguration configuration) =>
         services
             .AddServices()
+            .AddHangFire(configuration)
             .AddDatabase(configuration)
             .AddHealthChecks(configuration)
             .AddAuthenticationInternal(configuration)
@@ -45,6 +49,23 @@ public static class DependencyInjection
         services.AddScoped<IHttpContextService, HttpContextService>();
         services.AddScoped<IPromoCodeService, PromoCodeService>();
         services.AddScoped<ICartService, CartService>();
+        services.AddScoped<IDeliveryFeeService, DeliveryFeeService>();
+        services.AddScoped<IRiderAssignmentService, RiderAssignmentService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddHangFire(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddHangfire(config =>
+        config.UsePostgreSqlStorage(options =>
+            options.UseNpgsqlConnection(
+                configuration.GetConnectionString("Database"))));
+
+        services.AddHangfireServer();
+
+        // Bind your Application interface → Hangfire adapter
+        services.AddScoped<Application.Abstractions.Services.IBackgroundJobClient, HangfireBackgroundJobClient>();
 
         return services;
     }

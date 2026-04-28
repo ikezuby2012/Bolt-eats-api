@@ -86,6 +86,10 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasMaxLength(2000)
             .HasColumnName("notes");
 
+        builder.Property(o => o.CancellationNotes)
+            .HasMaxLength(2000)
+            .HasColumnName("cancellation_notes");
+
         builder.Property(o => o.CheckoutAt)
             .HasColumnType("timestamp with time zone")
             .HasColumnName("checkout_at");
@@ -113,6 +117,14 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.UpdatedAt)
             .HasColumnType("timestamp with time zone")
             .HasColumnName("updated_at");
+
+        builder.Property(o => o.CancelledAt)
+            .HasColumnType("timestamp with time zone")
+            .HasColumnName("cancelled_at");
+
+        builder.Property(o => o.RefundedAt)
+            .HasColumnType("timestamp with time zone")
+            .HasColumnName("refunded_at");
 
         builder.Property(o => o.UpdatedBy)
             .HasMaxLength(100)
@@ -159,6 +171,12 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
            .OnDelete(DeleteBehavior.Restrict)
            .IsRequired()
            .HasConstraintName("fk_order_status");
+
+        builder.HasMany(u => u.Items)
+           .WithOne(a => a.Order)
+           .HasForeignKey(a => a.OrderId)
+           .OnDelete(DeleteBehavior.Cascade)
+           .HasConstraintName("fk_order_items");
 
         builder.HasQueryFilter(r => !r.IsSoftDeleted);
     }

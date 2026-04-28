@@ -24,8 +24,14 @@ public sealed class Order : Auditable<Guid>
     public string? PromoCode { get; set; }
     public string? PaymentRef { get; set; }
     public string? Notes { get; set; }
+    public string? CancellationNotes { get; set; }
     public DateTime? CheckoutAt { get; set; }
+    public DateTime? CancelledAt { get; set; }
     public DateTime? AcceptedAt { get; set; }
     public DateTime? PickedUpAt { get; set; }
     public DateTime? DeliveredAt { get; set; }
+    public DateTime? RefundedAt { get; set; }
+    //public DateTime PreparingAt { get; set; }
+
+    public ICollection<OrderItem> Items { get; set; } = [];
 }
