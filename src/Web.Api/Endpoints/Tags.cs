@@ -7,4 +7,5 @@ public static class Tags
     public const string Restaurant = "Restaurant";
     public const string Cart = "Cart";
     public const string Order = "Order";
+    public const string Review = "Review";
 }

@@ -1,18 +1,17 @@
 ﻿using Application.Abstractions.Authentication;
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
-using Application.Restaurant.Dto;
 using Application.Reviews.Dto;
 using Domain.Order;
 using Domain.Review;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Asn1.Ocsp;
 using SharedKernel;
 
 namespace Application.Reviews.SubmitReview;
 
 internal sealed class SubmitReviewCommandHandler(IApplicationDbContext context, IUserContext userContext, IDateTimeProvider dateTimeProvider) : ICommandHandler<SubmitReviewCommand, ReviewDto>
 {
+
     public async Task<Result<ReviewDto>> Handle(SubmitReviewCommand command, CancellationToken cancellationToken)
     {
         Guid userId = userContext.UserId;
@@ -56,9 +55,10 @@ internal sealed class SubmitReviewCommandHandler(IApplicationDbContext context, 
             CreatedBy = userId.ToString(),
         };
 
-        Console.WriteLine(review);
+        review.Raise(new ReviewRatingUpdateEvent(order.RestaurantId));
 
+        await context.Review.AddAsync(review, cancellationToken);
 
-        throw new NotImplementedException();
+        return (ReviewDto)review;
     }
 }

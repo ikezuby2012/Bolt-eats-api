@@ -2,6 +2,7 @@ using System.Reflection;
 using Application;
 using Asp.Versioning;
 using Asp.Versioning.Builder;
+using Hangfire;
 using HealthChecks.UI.Client;
 using Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -85,6 +86,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGet("/api/ping", () => "Hello from Uber Eats API!");
+
+app.UseHangfireDashboard("/jobs");
 
 app.MapControllers();
 

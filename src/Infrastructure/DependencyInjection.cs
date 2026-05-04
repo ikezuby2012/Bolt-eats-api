@@ -2,6 +2,7 @@
 using Application.Abstractions.Authentication;
 using Application.Abstractions.Data;
 using Application.Abstractions.Interface;
+using Application.Abstractions.Interface.Jobs;
 using Application.Abstractions.Services;
 using Hangfire;
 using Hangfire.PostgreSql;
@@ -51,6 +52,7 @@ public static class DependencyInjection
         services.AddScoped<ICartService, CartService>();
         services.AddScoped<IDeliveryFeeService, DeliveryFeeService>();
         services.AddScoped<IRiderAssignmentService, RiderAssignmentService>();
+        services.AddScoped<IRatingCalculator, RatingCalculator>();
 
         return services;
     }
@@ -66,6 +68,7 @@ public static class DependencyInjection
 
         // Bind your Application interface → Hangfire adapter
         services.AddScoped<Application.Abstractions.Services.IBackgroundJobClient, HangfireBackgroundJobClient>();
+        services.AddScoped<IReviewRatingUpdateJob, ReviewRatingUpdateJob>();
 
         return services;
     }
