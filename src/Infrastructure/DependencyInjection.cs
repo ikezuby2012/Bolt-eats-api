@@ -4,6 +4,7 @@ using Application.Abstractions.Data;
 using Application.Abstractions.Interface;
 using Application.Abstractions.Interface.Jobs;
 using Application.Abstractions.Services;
+using Application.Abstractions.Services.Payments;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Infrastructure.Authentication;
@@ -12,6 +13,7 @@ using Infrastructure.BackgroundJobs;
 using Infrastructure.Database;
 using Infrastructure.DomainEvents;
 using Infrastructure.Services;
+using Infrastructure.Services.Payment;
 using Infrastructure.Time;
 using Infrastructure.UnitOfWork.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -53,6 +55,13 @@ public static class DependencyInjection
         services.AddScoped<IDeliveryFeeService, DeliveryFeeService>();
         services.AddScoped<IRiderAssignmentService, RiderAssignmentService>();
         services.AddScoped<IRatingCalculator, RatingCalculator>();
+        services.AddScoped<ITokenCache, RedisTokenCache>();
+        services.AddScoped<IPaymentGateway, StripePaymentGateway>();
+        services.AddHttpClient<MonnifyPaymentGateway>();
+        services.AddScoped<IPaymentGateway, MonnifyPaymentGateway>();
+        services.AddScoped<IPaymentGatewayFactory, PaymentGatewayFactory>();
+        services.AddKeyedScoped<IWebhookParser, StripeWebhookParser>("stripe");
+        services.AddKeyedScoped<IWebhookParser, MonnifyWebhookParser>("monnify");
 
         return services;
     }

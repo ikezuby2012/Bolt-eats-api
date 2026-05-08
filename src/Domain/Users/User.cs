@@ -16,8 +16,17 @@ public sealed class User : Auditable<Guid>
     public UserRole? UserRole { get; set; }
     public DateTime? LastLogin { get; set; }
     public string? CreatedById { get; set; }
+    public string? StripeCustomerId { get; set; }
+    public string? MonnifyCustomerId { get; set; }
     public bool IsActive { get; set; } = true;
     public bool isVerifed { get; set; }
     public bool IsOnline { get; set; }
     public ICollection<Address.Address>? Addresses { get; set; } = new List<Address.Address>();
+
+    public string? GetGatewayCustomerId(int GatewayId) => GatewayId switch
+    {
+        1 => StripeCustomerId,
+        2 => MonnifyCustomerId,
+        _ => null
+    };
 }

@@ -36,6 +36,9 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
                .HasMaxLength(512)
                .HasColumnName("PASSWORD_HASH");
 
+        builder.Property(u => u.MonnifyCustomerId).HasColumnName("MONNIFY_CUSTOMER_ID");
+        builder.Property(u => u.StripeCustomerId).HasColumnName("STRIPE_CUSTOMER_ID");
+
         builder.Property(u => u.PhoneNumber).HasMaxLength(20).HasColumnName("phone_number");
         builder.Property(u => u.DateOfBirth).HasColumnName("date_of_birth");
         builder.Property(u => u.ProfileImageUrl).HasMaxLength(2000).HasColumnName("profile_image_url");

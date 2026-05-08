@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260504205213_createdPaymentsTable")]
+    partial class createdPaymentsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -918,10 +921,6 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("customer_id");
 
-                    b.Property<string>("CustomerNotes")
-                        .HasColumnType("text")
-                        .HasColumnName("customer_notes");
-
                     b.Property<string>("FailureCode")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
@@ -950,10 +949,6 @@ namespace Infrastructure.Database.Migrations
                     b.Property<bool>("IsSoftDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_soft_deleted");
-
-                    b.Property<bool>("OrderCreationFailed")
-                        .HasColumnType("boolean")
-                        .HasColumnName("order_creation_failed");
 
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid")
@@ -1090,11 +1085,6 @@ namespace Infrastructure.Database.Migrations
                         {
                             Id = 6,
                             Name = "Partial Refund"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Name = "Disputed"
                         });
                 });
 
@@ -1697,10 +1687,6 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("LAST_NAME");
 
-                    b.Property<string>("MonnifyCustomerId")
-                        .HasColumnType("text")
-                        .HasColumnName("MONNIFY_CUSTOMER_ID");
-
                     b.Property<string>("OTP")
                         .IsRequired()
                         .HasMaxLength(6)
@@ -1728,10 +1714,6 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(1)
                         .HasColumnName("ROLE_ID");
-
-                    b.Property<string>("StripeCustomerId")
-                        .HasColumnType("text")
-                        .HasColumnName("STRIPE_CUSTOMER_ID");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")

@@ -2,6 +2,7 @@
 using Domain.Auth;
 using Domain.Users;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Application.Abstractions.Data;
 
@@ -19,5 +20,7 @@ public interface IApplicationDbContext
     DbSet<Domain.PromoCode.PromoCode> PromoCode { get; }
     DbSet<Domain.PromoCode.PromoCodeUsage> PromoCodeUsages { get; }
     DbSet<Domain.Order.Order> Order { get; }
+    DbSet<Domain.Payment.Payment> Payment { get; }
+    DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

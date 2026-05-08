@@ -19,6 +19,9 @@ internal sealed class CartService : ICartService
         decimal tax = Math.Round(taxableAmount * TaxRate, 2);
         decimal total = taxableAmount + deliveryFee + tax;
 
+        bool meetsMinimum = cart.Restaurant.MinOrderAmount is null ||
+                    subtotal >= cart.Restaurant.MinOrderAmount;
+
         return new CartSummaryDto(
             Subtotal: subtotal,
             DeliveryFee: deliveryFee,
@@ -26,6 +29,6 @@ internal sealed class CartService : ICartService
             Tax: tax,
             Total: total,
             PromoCode: cart.PromoCode,
-            FreeDelivery: freeDelivery);
+            FreeDelivery: freeDelivery, meetsMinimum);
     }
 }

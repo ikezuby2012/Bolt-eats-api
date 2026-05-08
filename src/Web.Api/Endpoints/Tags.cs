@@ -8,4 +8,5 @@ public static class Tags
     public const string Cart = "Cart";
     public const string Order = "Order";
     public const string Review = "Review";
+    public const string Payment = "Payment";
 }

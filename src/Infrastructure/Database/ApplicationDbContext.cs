@@ -3,10 +3,12 @@ using Application.Abstractions.Data;
 using Domain.Auth;
 using Domain.Cart;
 using Domain.Order;
+using Domain.Payment;
 using Domain.PromoCode;
 using Domain.Users;
 using Infrastructure.DomainEvents;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using SharedKernel;
 
 namespace Infrastructure.Database;
@@ -28,6 +30,9 @@ public sealed class ApplicationDbContext(
     public DbSet<PromoCode> PromoCode => Set<PromoCode>();
     public DbSet<PromoCodeUsage> PromoCodeUsages => Set<PromoCodeUsage>();
     public DbSet<Order> Order => Set<Order>();
+    public DbSet<Payment> Payment => Set<Payment>();
+
+    //public DatabaseFacade Database => base.Database;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

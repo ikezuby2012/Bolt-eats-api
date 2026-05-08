@@ -7,4 +7,5 @@ public record CartSummaryDto(
     decimal Tax,
     decimal Total,
     string? PromoCode,
-    bool FreeDelivery);
+    bool FreeDelivery,
+    bool MeetMinimumOrder);

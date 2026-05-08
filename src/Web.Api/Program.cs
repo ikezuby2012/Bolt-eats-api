@@ -5,6 +5,7 @@ using Asp.Versioning.Builder;
 using Hangfire;
 using HealthChecks.UI.Client;
 using Infrastructure;
+using Infrastructure.Services.Payment;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 using Web.Api;
@@ -17,6 +18,7 @@ builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configu
 builder.Services.AddSwaggerGenWithAuth();
 
 builder.Services.AddHttpClient();
+//builder.Services.AddHttpClient<MonnifyPaymentGateway>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddCors(options => options.AddPolicy("AllowAll", builder => builder.AllowAnyOrigin()

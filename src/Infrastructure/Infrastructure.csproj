@@ -7,10 +7,12 @@
 		<PackageReference Include="Hangfire.PostgreSql" />
 		<PackageReference Include="MailKit" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
 		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
 		<PackageReference Include="Newtonsoft.Json" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite" />
+		<PackageReference Include="Stripe.net" />
 	</ItemGroup>
 
 	<ItemGroup>
