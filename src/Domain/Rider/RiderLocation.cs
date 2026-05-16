@@ -15,5 +15,6 @@ public sealed class RiderLocation : Auditable<Guid>
     public decimal? Longitude { get; set; }
     public double Bearing { get; set; }
     public double Speed { get; set; }
+    public double? Accuracy { get; set; }
     public DateTime? RecordedAt { get; set; }
 }

@@ -31,6 +31,8 @@ public sealed class Order : Auditable<Guid>
     public DateTime? PickedUpAt { get; set; }
     public DateTime? DeliveredAt { get; set; }
     public DateTime? RefundedAt { get; set; }
+    public int? EstimatedDeliveryMinutes { get; set; }
+    public int? EstimatedTravelMinutes { get; set; }
     //public DateTime PreparingAt { get; set; }
 
     public ICollection<OrderItem> Items { get; set; } = [];

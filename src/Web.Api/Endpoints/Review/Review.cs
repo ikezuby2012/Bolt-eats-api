@@ -19,16 +19,16 @@ public class Review : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("review", async ([FromBody] SubmitReviewRequest body, ICommandHandler<SubmitReviewCommand, ReviewDto> handler, CancellationToken cancellationToken) =>
+        app.MapPost("review", async ([FromBody] SubmitReviewRequest body, [FromServices] ICommandHandler<SubmitReviewCommand, ReviewDto> handler, CancellationToken cancellationToken) =>
         {
             var command = new SubmitReviewCommand(body.OrderId, body.Rating, body.Comment);
 
             Result<ReviewDto> result = await handler.Handle(command, cancellationToken);
 
-            return result.Match(value => Results.Ok(ApiResponse<ReviewDto>.Success(value, "Review Submitted Successfully")), error => CustomResults.Problem(error));
+            return result.Match(value => Results.Created($"/review/{result.Value.Id}", ApiResponse<ReviewDto>.Success(value, "Review Submitted Successfully")), error => CustomResults.Problem(error));
         }).WithTags(Tags.Review).RequireAuthorization();
 
-        app.MapGet("review/{Id:Guid}", async (Guid Id, IQueryHandler<GetReviewByIdQuery, ReviewDto> handler, CancellationToken cancellationToken) =>
+        app.MapGet("review/{Id:Guid}", async (Guid Id, [FromServices] IQueryHandler<GetReviewByIdQuery, ReviewDto> handler, CancellationToken cancellationToken) =>
         {
             var query = new GetReviewByIdQuery(Id);
 
@@ -37,7 +37,7 @@ public class Review : IEndpoint
             return result.Match(value => Results.Ok(ApiResponse<ReviewDto>.Success(value, "Review fetched successfully")), error => CustomResults.Problem(error));
         }).WithTags(Tags.Review).RequireAuthorization();
 
-        app.MapPatch("review/{Id:Guid}", async (Guid Id, [FromBody] EditReviewRequest body, ICommandHandler<EditReviewCommand, ReviewDto> handler, CancellationToken cancellationToken) =>
+        app.MapPatch("review/{Id:Guid}", async (Guid Id, [FromBody] EditReviewRequest body, [FromServices] ICommandHandler<EditReviewCommand, ReviewDto> handler, CancellationToken cancellationToken) =>
         {
             var query = new EditReviewCommand(Id, body.Rating, body.Comment);
 
@@ -46,7 +46,7 @@ public class Review : IEndpoint
             return result.Match(value => Results.Ok(ApiResponse<ReviewDto>.Success(value, "Review Updated successfully")), error => CustomResults.Problem(error));
         }).WithTags(Tags.Review).RequireAuthorization();
 
-        app.MapDelete("review/{Id:Guid}", async (Guid Id, ICommandHandler<RemoveReviewCommand> handler, CancellationToken cancellationToken) =>
+        app.MapDelete("review/{Id:Guid}", async (Guid Id, [FromServices] ICommandHandler<RemoveReviewCommand> handler, CancellationToken cancellationToken) =>
         {
             var query = new RemoveReviewCommand(Id);
 

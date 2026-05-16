@@ -9,4 +9,7 @@ public static class Tags
     public const string Order = "Order";
     public const string Review = "Review";
     public const string Payment = "Payment";
+    public const string Tracking = "Tracking";
+    public const string Notification = "Notification";
+    public const string Promo = "Promo";
 }

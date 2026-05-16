@@ -130,6 +130,9 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasMaxLength(100)
             .HasColumnName("updated_by");
 
+        builder.Property(o => o.EstimatedDeliveryMinutes).HasColumnName("estimated_delivery_minutes");
+        builder.Property(o => o.EstimatedTravelMinutes).HasColumnName("estimated_travel_minutes");
+
         builder.Property(o => o.IsSoftDeleted)
             .IsRequired()
             .HasDefaultValueSql("false")

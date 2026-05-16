@@ -5,6 +5,8 @@ using Asp.Versioning.Builder;
 using Hangfire;
 using HealthChecks.UI.Client;
 using Infrastructure;
+using Infrastructure.BackgroundJobs;
+using Infrastructure.Hubs;
 using Infrastructure.Services.Payment;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
@@ -87,11 +89,21 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.MapGet("/api/ping", () => "Hello from Uber Eats API!");
+app.MapGet("/api/ping", () => "Hello from Chill Eats API!");
 
 app.UseHangfireDashboard("/jobs");
 
 app.MapControllers();
+app.MapHub<TrackingHub>("/hubs/tracking");
+
+/// ========================================
+/// Recurring Jobs
+/// ========================================
+
+RecurringJob.AddOrUpdate<LocationHistoryPruneJob>(
+    "prune-location-history",
+    j => j.PruneAsync(CancellationToken.None),
+    Cron.Hourly);
 
 await app.RunAsync();
 

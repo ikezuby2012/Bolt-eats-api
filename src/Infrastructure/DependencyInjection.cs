@@ -4,7 +4,11 @@ using Application.Abstractions.Data;
 using Application.Abstractions.Interface;
 using Application.Abstractions.Interface.Jobs;
 using Application.Abstractions.Services;
+using Application.Abstractions.Services.Notification;
 using Application.Abstractions.Services.Payments;
+using Application.Abstractions.Services.Rider;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Infrastructure.Authentication;
@@ -13,7 +17,9 @@ using Infrastructure.BackgroundJobs;
 using Infrastructure.Database;
 using Infrastructure.DomainEvents;
 using Infrastructure.Services;
+using Infrastructure.Services.NotificationService;
 using Infrastructure.Services.Payment;
+using Infrastructure.Services.Rider;
 using Infrastructure.Time;
 using Infrastructure.UnitOfWork.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -24,6 +30,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using SharedKernel;
+using StackExchange.Redis;
 
 namespace Infrastructure;
 
@@ -37,6 +44,8 @@ public static class DependencyInjection
             .AddHangFire(configuration)
             .AddDatabase(configuration)
             .AddHealthChecks(configuration)
+            .AddRedisService(configuration)
+            .AddFirebaseService(configuration)
             .AddAuthenticationInternal(configuration)
             .AddAuthorizationInternal();
 
@@ -52,16 +61,23 @@ public static class DependencyInjection
         services.AddScoped<IHttpContextService, HttpContextService>();
         services.AddScoped<IPromoCodeService, PromoCodeService>();
         services.AddScoped<ICartService, CartService>();
+
         services.AddScoped<IDeliveryFeeService, DeliveryFeeService>();
+        services.AddScoped<IDeliveryEstimateService, DeliveryEstimateService>();
+
         services.AddScoped<IRiderAssignmentService, RiderAssignmentService>();
+
         services.AddScoped<IRatingCalculator, RatingCalculator>();
         services.AddScoped<ITokenCache, RedisTokenCache>();
+
         services.AddScoped<IPaymentGateway, StripePaymentGateway>();
         services.AddHttpClient<MonnifyPaymentGateway>();
         services.AddScoped<IPaymentGateway, MonnifyPaymentGateway>();
         services.AddScoped<IPaymentGatewayFactory, PaymentGatewayFactory>();
+
         services.AddKeyedScoped<IWebhookParser, StripeWebhookParser>("stripe");
         services.AddKeyedScoped<IWebhookParser, MonnifyWebhookParser>("monnify");
+        services.AddScoped<ITrackingService, TrackingService>();
 
         return services;
     }
@@ -148,6 +164,54 @@ public static class DependencyInjection
         services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
         services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddRedisService(this IServiceCollection services, IConfiguration configuration)
+    {
+        string redisConnection = configuration.GetConnectionString("Redis")!;
+
+        services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(configuration.GetConnectionString("Redis")!));
+
+        services.AddSignalR().AddStackExchangeRedis(options =>
+        {
+            options.ConnectionFactory = async writer =>
+            {
+                ConnectionMultiplexer multiplexer = await ConnectionMultiplexer.ConnectAsync(redisConnection);
+
+                multiplexer.ConnectionFailed += (_, e) =>
+                {
+                    writer.WriteLine($"Redis connection failed: {e.Exception?.Message}");
+                };
+
+                return multiplexer;
+            };
+
+            options.Configuration.ChannelPrefix = RedisChannel.Literal("signalr");
+        });
+
+        services.AddScoped<IRiderLocationCache, RiderLocationCache>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddFirebaseService(this IServiceCollection services, IConfiguration configuration)
+    {
+        string credentialPath = configuration["Firebase:ServiceAccountPath"]!;
+
+        using var stream = new FileStream(credentialPath, FileMode.Open, FileAccess.Read);
+
+        var credential = ServiceAccountCredential.FromServiceAccountData(stream);
+
+        FirebaseApp.Create(new AppOptions
+        {
+            Credential = credential.ToGoogleCredential()
+        });
+
+        services
+            .AddScoped<IPushNotificationService, FcmPushNotificationService>()
+            .AddScoped<INotificationService, NotificationService>();
 
         return services;
     }

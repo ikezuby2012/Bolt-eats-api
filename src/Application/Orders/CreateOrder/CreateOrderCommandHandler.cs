@@ -2,6 +2,7 @@
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
 using Application.Abstractions.Services;
+using Application.Abstractions.Services.Rider;
 using Application.Orders.Dto;
 using Domain.Order;
 using Domain.PromoCode;
@@ -10,19 +11,29 @@ using SharedKernel;
 
 namespace Application.Orders.CreateOrder;
 
-internal sealed class CreateOrderCommandHandler(IApplicationDbContext context, IUserContext userContext, IDeliveryFeeService deliveryFeeService, IPromoCodeService promoService, IDateTimeProvider dateTimeProvider, IRiderAssignmentService riderAssignmentService) : ICommandHandler<CreateOrderCommand, OrderDto>
+internal sealed class CreateOrderCommandHandler(
+    IApplicationDbContext context, 
+    IUserContext userContext, 
+    IDeliveryFeeService deliveryFeeService, 
+    IPromoCodeService promoService, 
+    IDateTimeProvider dateTimeProvider, IRiderAssignmentService riderAssignmentService,
+    IDeliveryEstimateService estimateService) : ICommandHandler<CreateOrderCommand, OrderDto>
+
 {
     private const decimal TaxRate = 0.085m;
     public async Task<Result<OrderDto>> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
     {
         Guid userId = userContext.UserId;
 
-        Domain.Cart.Cart? cart = await context.Cart.Include(c => c.Restaurant)
+        Domain.Cart.Cart? cart = await context.Cart
+            .Include(c => c.Restaurant)
+                .ThenInclude(x => x.Addresses)
             .Include(c => c.Items)
                 .ThenInclude(i => i.MenuItem)
             .FirstOrDefaultAsync(
                 c => c.UserId == userId,
                 cancellationToken);
+
 
         if (cart is null)
         {
@@ -91,6 +102,8 @@ internal sealed class CreateOrderCommandHandler(IApplicationDbContext context, I
             return Result.Failure<OrderDto>(Domain.Common.CommonErrors.CustomErrorMessage($"Minimum order amount for this restaurant is {cart.Restaurant.MinOrderAmount:C}."));
         }
 
+        Tracking.Dto.DeliveryEstimate estimate = await estimateService.EstimateAsync(cart.Restaurant, customerAddress, cancellationToken);
+
         var order = new Order
         {
             Id = Guid.NewGuid(),
@@ -107,6 +120,8 @@ internal sealed class CreateOrderCommandHandler(IApplicationDbContext context, I
             SubTotal = subtotal,
             CreatedAt = dateTimeProvider.UtcNow,
             CreatedBy = userId.ToString(),
+            EstimatedDeliveryMinutes = estimate.TotalMinutes,
+            EstimatedTravelMinutes = estimate.TravelMinutes,
             Items = cart.Items.Select(i => new OrderItem
             {
                 Id = Guid.NewGuid(),

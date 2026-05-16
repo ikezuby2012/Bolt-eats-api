@@ -1,5 +1,6 @@
 ﻿using Domain.Address;
 using Domain.Auth;
+using Domain.Notification;
 using Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -21,6 +22,10 @@ public interface IApplicationDbContext
     DbSet<Domain.PromoCode.PromoCodeUsage> PromoCodeUsages { get; }
     DbSet<Domain.Order.Order> Order { get; }
     DbSet<Domain.Payment.Payment> Payment { get; }
+    DbSet<Domain.Rider.RiderLocation> RiderLocations { get; }
+    DbSet<Domain.Notification.Notification> Notification { get; }
+    DbSet<DeviceToken> DeviceTokens { get; }
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
+

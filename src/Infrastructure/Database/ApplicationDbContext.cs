@@ -2,9 +2,11 @@
 using Application.Abstractions.Data;
 using Domain.Auth;
 using Domain.Cart;
+using Domain.Notification;
 using Domain.Order;
 using Domain.Payment;
 using Domain.PromoCode;
+using Domain.Rider;
 using Domain.Users;
 using Infrastructure.DomainEvents;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +33,10 @@ public sealed class ApplicationDbContext(
     public DbSet<PromoCodeUsage> PromoCodeUsages => Set<PromoCodeUsage>();
     public DbSet<Order> Order => Set<Order>();
     public DbSet<Payment> Payment => Set<Payment>();
+    public DbSet<RiderLocation> RiderLocations => Set<RiderLocation>();
+
+    public DbSet<Notification> Notification => Set<Notification>();
+    public DbSet<DeviceToken> DeviceTokens => Set<DeviceToken>();
 
     //public DatabaseFacade Database => base.Database;
 

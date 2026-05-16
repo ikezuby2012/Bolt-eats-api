@@ -553,6 +553,270 @@ namespace Infrastructure.Database.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Domain.Notification.DeviceToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("GEN_RANDOM_UUID()");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool>("IsSoftDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_soft_deleted");
+
+                    b.Property<string>("Platform")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("platform");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("token");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tbl_device_token");
+
+                    b.HasIndex("Token")
+                        .IsUnique()
+                        .HasDatabaseName("ix_tbl_device_token_token");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_tbl_device_token_user_id");
+
+                    b.ToTable("TBL_DEVICE_TOKEN", "public");
+                });
+
+            modelBuilder.Entity("Domain.Notification.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("GEN_RANDOM_UUID()");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("body");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<bool>("IsRead")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_read");
+
+                    b.Property<bool>("IsSoftDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_soft_deleted");
+
+                    b.Property<int>("NotificationChannelId")
+                        .HasColumnType("integer")
+                        .HasColumnName("notification_channel_id");
+
+                    b.Property<int>("NotificationTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("notification_type_id");
+
+                    b.Property<string>("Payload")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("payload");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("read_at");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tbl_notification");
+
+                    b.HasIndex("NotificationChannelId")
+                        .HasDatabaseName("ix_tbl_notification_notification_channel_id");
+
+                    b.HasIndex("NotificationTypeId")
+                        .HasDatabaseName("ix_tbl_notification_notification_type_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_tbl_notification_user_id");
+
+                    b.ToTable("TBL_NOTIFICATION", "public");
+                });
+
+            modelBuilder.Entity("Domain.Notification.NotificationChannel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tbl_notification_channel");
+
+                    b.ToTable("TBL_NOTIFICATION_CHANNEL", "public");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Push"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "InApp"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Both"
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Notification.NotificationType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tbl_notification_type");
+
+                    b.ToTable("TBL_NOTIFICATION_TYPE", "public");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Order Placed"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Order Confirmed"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Order Preparing"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Order Ready for Pickup"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Order Out for Delivery"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "Order Delivered"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Name = "Order Cancelled"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Name = "Payment Succeeded"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Name = "Payment Failed"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Name = "Promo Code Applied"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Name = "Review Received"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Name = "General"
+                        });
+                });
+
             modelBuilder.Entity("Domain.Order.EOrderStatus", b =>
                 {
                     b.Property<int>("Id")
@@ -684,6 +948,14 @@ namespace Infrastructure.Database.Migrations
                     b.Property<decimal?>("Discount")
                         .HasColumnType("numeric(12,2)")
                         .HasColumnName("discount");
+
+                    b.Property<int?>("EstimatedDeliveryMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("estimated_delivery_minutes");
+
+                    b.Property<int?>("EstimatedTravelMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("estimated_travel_minutes");
 
                     b.Property<bool>("IsSoftDeleted")
                         .ValueGeneratedOnAdd()
@@ -1553,6 +1825,10 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<double?>("Accuracy")
+                        .HasColumnType("double precision")
+                        .HasColumnName("accuracy");
+
                     b.Property<double>("Bearing")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("numeric(12,2)")
@@ -1901,6 +2177,48 @@ namespace Infrastructure.Database.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("Restaurant");
+                });
+
+            modelBuilder.Entity("Domain.Notification.DeviceToken", b =>
+                {
+                    b.HasOne("Domain.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_tbl_device_token_users_user_id");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Notification.Notification", b =>
+                {
+                    b.HasOne("Domain.Notification.NotificationChannel", "NotificationChannel")
+                        .WithMany()
+                        .HasForeignKey("NotificationChannelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_tbl_notification_tbl_notification_channel_notification_chan");
+
+                    b.HasOne("Domain.Notification.NotificationType", "NotificationType")
+                        .WithMany()
+                        .HasForeignKey("NotificationTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_tbl_notification_notification_type_notification_type_id");
+
+                    b.HasOne("Domain.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_tbl_notification_users_user_id");
+
+                    b.Navigation("NotificationChannel");
+
+                    b.Navigation("NotificationType");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Order.Order", b =>
