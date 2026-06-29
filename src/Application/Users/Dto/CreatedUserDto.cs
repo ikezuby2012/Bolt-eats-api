@@ -1,4 +1,6 @@
-﻿using Domain.Users;
+﻿using System.Text.Json.Serialization;
+using Domain.Users;
+using Org.BouncyCastle.Asn1.X509;
 
 namespace Application.Users.Dto;
 
@@ -8,12 +10,17 @@ public class CreatedUserDto
     public string Email { get; set; }
     public string FirstName { get; set; }
     public string LastName { get; set; }
+    public int RoleId { get; set; }
+
+    [JsonIgnore]
     public string OTP { get; set; }
     public string RoleName { get; set; }
+    public string? Phone { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public bool IsActive { get; set; } = true;
     public bool isVerifed { get; set; }
+
 
     public static explicit operator CreatedUserDto(User user) => new CreatedUserDto
     {
@@ -22,6 +29,8 @@ public class CreatedUserDto
         FirstName = user.FirstName,
         LastName = user.LastName,
         OTP = user.OTP,
+        Phone = user.PhoneNumber,
+        RoleId = user.RoleId,
         RoleName = UserRole.FromValue(user.RoleId!)?.Name!,
         CreatedAt = user.CreatedAt,
         UpdatedAt = user.UpdatedAt,

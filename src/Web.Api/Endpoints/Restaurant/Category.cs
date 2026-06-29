@@ -2,6 +2,7 @@
 using Application.Restaurant.AddMenuCategory;
 using Application.Restaurant.DeleteMenuCategory;
 using Application.Restaurant.Dto;
+using Application.Restaurant.GetCommonCategory;
 using Application.Restaurant.UpdateCategory;
 using Microsoft.AspNetCore.Mvc;
 using SharedKernel;
@@ -43,5 +44,14 @@ public class Category : IEndpoint
                  () => Results.NoContent(),
                  error => CustomResults.Problem(error));
         }).WithTags(Tags.Restaurant).RequireAuthorization();
+
+        app.MapGet("restaurant/common-categories", async (IQueryHandler<GetCommonCategoryQuery, IReadOnlyList<CommonCategoryDto>> handler, CancellationToken cancellationToken, [FromQuery] int limit = 10) =>
+        {
+            var command = new GetCommonCategoryQuery(limit);
+
+            Result<IReadOnlyList<CommonCategoryDto>> result = await handler.Handle(command, cancellationToken);
+
+            return result.Match(value => Results.Ok(ApiResponse<IReadOnlyList<CommonCategoryDto>>.Success(value, "Common Restaurant Category added successfully")), error => CustomResults.Problem(error));
+        }).WithTags(Tags.Restaurant);
     }
 }

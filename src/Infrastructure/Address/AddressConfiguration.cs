@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
 namespace Infrastructure.Address;
@@ -93,6 +94,21 @@ internal sealed class AddressConfiguration : IEntityTypeConfiguration<Domain.Add
         builder.HasIndex(a => a.UserId)
             .HasDatabaseName("ix_tbl_address_user_id");
 
+        builder.Property(x => x.DeliveryInstructions)
+            .HasMaxLength(2000);
+
+        builder.Property(x => x.BuildingType)
+            .HasMaxLength(100);
+
+        builder.Property(x => x.AddressLabel)
+            .HasMaxLength(100);
+
+        builder.Property(x => x.BuildingDetails)
+            .HasColumnType("jsonb")
+            .HasConversion(
+            v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+            v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions?)null)!);
+
         builder.HasIndex(a => new { a.UserId, a.IsDefault })
             .HasDatabaseName("ix_tbl_address_user_default")
             .IsUnique()
@@ -104,7 +120,7 @@ internal sealed class AddressConfiguration : IEntityTypeConfiguration<Domain.Add
             t.HasCheckConstraint("CK_address_longitude_range", "longitude BETWEEN -180 AND 180");
         });
 
-        builder.HasIndex(a => a.Location).HasMethod("GIST"); 
+        builder.HasIndex(a => a.Location).HasMethod("GIST");
 
         builder.Property(a => a.Location)
                .HasColumnType("geography (point, 4326)");

@@ -30,7 +30,11 @@ internal sealed class GetMyAddressesQueryHandler(IUserContext userContext, IAppl
                 LongitudeRaw = address.LongitudeRaw,
                 IsDefault = address.IsDefault,
                 CreatedAt = address.CreatedAt,
-                UpdatedAt = address.UpdatedAt
+                UpdatedAt = address.UpdatedAt,
+                DeliveryInstructions = address.DeliveryInstructions,
+                BuildingType = address.BuildingType,
+                AddressLabel = address.AddressLabel,
+                BuildingDetails = address.BuildingDetails,
             }).ToListAsync(cancellationToken);
 
         return Result.Success<IEnumerable<AddressDto>>(userAddress);

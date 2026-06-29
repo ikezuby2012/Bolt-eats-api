@@ -1,0 +1,81 @@
+﻿using Application.Abstractions.Data;
+using Application.Abstractions.Helpers;
+using Application.Abstractions.Messaging;
+using Application.Restaurant.Dto;
+using Microsoft.EntityFrameworkCore;
+using SharedKernel;
+using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
+
+namespace Application.Restaurant.GetInternationalBites;
+internal sealed class GetInternationalBitesQueryHandler(IApplicationDbContext db) : IQueryHandler<GetInternationalBitesQuery, IReadOnlyList<HomeSectionItemDto>>
+{
+
+    private static readonly string[] Keywords =
+    [
+        "pizza", "burger", "pasta", "sharwama", "shawarma", "wrap",
+        "sandwich", "noodles", "chips", "fries", "sushi", "taco",
+        "kebab", "pita", "hotdog", "continental", "international",
+        "loaded", "bbq", "barbecue", "peri-peri", "chicken kickers",
+        "garlic bread", "lasagna", "carbonara", "ramen"
+    ];
+
+    public async Task<Result<IReadOnlyList<HomeSectionItemDto>>> Handle(
+    GetInternationalBitesQuery request,
+    CancellationToken cancellationToken)
+    {
+        IQueryable<Domain.MenuItem.MenuItem> baseQuery = db.MenuItem
+            .AsNoTracking()
+            .Where(m =>
+                m.IsAvailable &&
+                m.Restaurant.IsActive &&
+                m.Restaurant.IsOpen);
+
+        IQueryable<Domain.MenuItem.MenuItem> filtered = KeywordPredicateBuilder
+            .WhereMatchesAnyKeyword(baseQuery, Keywords);
+
+        var items = await filtered
+            .OrderByDescending(m => m.IsPopular)
+            .ThenByDescending(m => m.Restaurant.Rating)
+            .Take(request.Limit)
+            .Select(m => new
+            {
+                m.Id,
+                m.Name,
+                m.Price,
+                m.DiscountPrice,
+                m.ImageUrl,
+                CategoryName = m.Category.Name,
+                m.RestaurantId,
+                RestaurantName = m.Restaurant.Name,
+                RestaurantLogo = m.Restaurant.LogoUrl,
+                RestaurantRating = m.Restaurant.Rating,
+                m.Restaurant.DeliveryFeeMin,
+                m.Restaurant.EstDeliveryMin,
+                m.Restaurant.EstDeliveryMax,
+                m.PrepTimeMin
+            })
+            .ToListAsync(cancellationToken);
+
+        return Result.Success<IReadOnlyList<HomeSectionItemDto>>(
+            items.Select(m => new HomeSectionItemDto(
+                m.Id,
+                m.Name,
+                m.Price,
+                m.DiscountPrice,
+                m.ImageUrl,
+                m.CategoryName,
+                m.RestaurantId,
+                m.RestaurantName,
+                m.RestaurantLogo,
+                m.RestaurantRating,
+                m.DeliveryFeeMin is null or 0
+                    ? "Free"
+                    : $"₦{m.DeliveryFeeMin:N0}",
+                m.EstDeliveryMin != null
+                    ? $"{m.EstDeliveryMin}–{m.EstDeliveryMax} min"
+                    : "~30 min",
+                m.PrepTimeMin
+            )).ToList()
+        );
+    }
+}

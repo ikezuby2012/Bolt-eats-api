@@ -5,13 +5,17 @@ namespace Application.Users.UpdateMyAddress;
 
 public sealed record UpdateMyAddressCommand(
     Guid Id,
-    string Label,
-    string Street,
-    string City,
-    string State,
-    string Country,
-    string PostalCode,
-    string LatitudeRaw,
-    string LongitudeRaw,
+    string? Label,
+    string? Street,
+    string? City,
+    string? State,
+    string? Country,
+    string? PostalCode,
+    string? LatitudeRaw,
+    string? LongitudeRaw,
+    string? DeliveryInstructions,
+    string? BuildingType,
+    string? AddressLabel,
+    Dictionary<string, string>? BuildingDetails,
     bool IsDefault
 ) : ICommand<AddressDto>;

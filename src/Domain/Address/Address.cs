@@ -21,6 +21,10 @@ public sealed class Address : Auditable<Guid>
     public string LongitudeRaw { get; set; }
     public decimal? Latitude { get; set; }
     public decimal? Longitude { get; set; }
+    public string? DeliveryInstructions { get; set; }
+    public string? BuildingType { get; set; }
+    public string? AddressLabel { get; set; }
+    public Dictionary<string, string>? BuildingDetails { get; set; } = new();
     public bool IsDefault { get; set; }
 
     public Point? Location { get; set; }

@@ -7,6 +7,7 @@ using Application.Abstractions.Services;
 using Application.Abstractions.Services.Notification;
 using Application.Abstractions.Services.Payments;
 using Application.Abstractions.Services.Rider;
+using Application.Abstractions.Services.UploadMedia;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Hangfire;
@@ -17,6 +18,7 @@ using Infrastructure.BackgroundJobs;
 using Infrastructure.Database;
 using Infrastructure.DomainEvents;
 using Infrastructure.Services;
+using Infrastructure.Services.ImageUpload;
 using Infrastructure.Services.NotificationService;
 using Infrastructure.Services.Payment;
 using Infrastructure.Services.Rider;
@@ -29,6 +31,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using SharedKernel;
 using StackExchange.Redis;
 
@@ -52,6 +55,7 @@ public static class DependencyInjection
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+        services.AddSingleton<IImageUploadService, CloudinaryImageUploadService>();
 
         services.AddTransient<IOtpHandler, OtpHandler>();
         services.AddTransient<IDomainEventsDispatcher, DomainEventsDispatcher>();
@@ -79,6 +83,7 @@ public static class DependencyInjection
         services.AddKeyedScoped<IWebhookParser, MonnifyWebhookParser>("monnify");
         services.AddScoped<ITrackingService, TrackingService>();
 
+
         return services;
     }
 
@@ -102,8 +107,16 @@ public static class DependencyInjection
     {
         string? connectionString = configuration.GetConnectionString("Database");
 
+        var dataSourceBuilder =
+        new NpgsqlDataSourceBuilder(connectionString);
+
+        dataSourceBuilder.EnableDynamicJson();
+        dataSourceBuilder.UseNetTopologySuite();
+
+        NpgsqlDataSource dataSource = dataSourceBuilder.Build();
+
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(connectionString, npgsqlOptions =>
+            options.UseNpgsql(dataSource, npgsqlOptions =>
             {
                 npgsqlOptions
                     .UseNetTopologySuite()

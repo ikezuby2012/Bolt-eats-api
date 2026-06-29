@@ -27,6 +27,7 @@ internal sealed class RegisterUserCommandHandler(
             FirstName = command.FirstName,
             LastName = command.LastName,
             PasswordHash = passwordHasher.Hash(command.Password),
+            PhoneNumber = command.phone,
             OTP = userOtp,
             IsSoftDeleted = false,
             IsActive = true,

@@ -4,6 +4,7 @@ using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
 using Application.Restaurant.Dto;
 using Domain.Address;
+using Serilog;
 using SharedKernel;
 
 namespace Application.Restaurant.CreateRestaurant;
@@ -34,6 +35,7 @@ public sealed class CreateRestaurantCommandHandler(IDateTimeProvider dateTimePro
             IsActive = true,
             CreatedAt = dateTimeProvider.UtcNow,
             CreatedBy = userId.ToString(),
+            Rating = request.Rating ?? 0,
             Addresses = new List<Address>
             {
                 new Address
@@ -49,6 +51,7 @@ public sealed class CreateRestaurantCommandHandler(IDateTimeProvider dateTimePro
                     LatitudeRaw = request.Address.Lat.ToString(CultureInfo.InvariantCulture),
                     Latitude = request.Address.Lat,
                     PostalCode = request.Address.PostalCode ?? "",
+                    Location = Address.CreatePoint((double)request.Address.Lat, (double)request.Address.Lng),
                     Label = $"{request.Name} address",
                 }
             }

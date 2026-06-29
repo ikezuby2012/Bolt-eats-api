@@ -11,10 +11,12 @@
 		<PackageReference Include="Asp.Versioning.Http" />
 		<PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
 		<PackageReference Include="AspNetCore.HealthChecks.UI.Client" />
+		<PackageReference Include="CloudinaryDotNet" />
 		<PackageReference Include="FirebaseAdmin" />
 		<PackageReference Include="Hangfire" />
 		<PackageReference Include="Hangfire.PostgreSql" />
 		<PackageReference Include="MailKit" />
+		<PackageReference Include="MessagePack" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
 			<PrivateAssets>all</PrivateAssets>

@@ -32,6 +32,20 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("AddressLabel")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("address_label");
+
+                    b.Property<string>("BuildingDetails")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("building_details");
+
+                    b.Property<string>("BuildingType")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("building_type");
+
                     b.Property<string>("City")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -52,6 +66,11 @@ namespace Infrastructure.Database.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("created_by");
+
+                    b.Property<string>("DeliveryInstructions")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("delivery_instructions");
 
                     b.Property<bool>("IsDefault")
                         .ValueGeneratedOnAdd()

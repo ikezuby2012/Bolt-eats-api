@@ -44,6 +44,7 @@ internal sealed class AddMenuItemCommandHandler(IApplicationDbContext context, I
             IsAvailable = command.IsAvailable,
             IsPopular = command.IsPopular,
             SortOrder = command.SortOrder,
+            ImageUrl = command.ImageLink,
             CreatedAt = dateTimeProvider.UtcNow,
             CreatedBy = userId.ToString(),
         };

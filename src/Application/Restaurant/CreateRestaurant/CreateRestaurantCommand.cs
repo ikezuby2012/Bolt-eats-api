@@ -9,7 +9,7 @@ public sealed record CreateAddressRequest(
     string State,
     string Country,
     decimal Lat,
-    decimal Lng, 
+    decimal Lng,
     string? PostalCode);
 public sealed record CreateRestaurantCommand(
     string Name,
@@ -24,5 +24,6 @@ public sealed record CreateRestaurantCommand(
     int? EstDeliveryMin,
     int? EstDeliveryMax,
     bool CompanyPartner,
-    CreateAddressRequest Address
+    CreateAddressRequest Address,
+    double? Rating = 0
     ) : ICommand<RestaurantDto>;

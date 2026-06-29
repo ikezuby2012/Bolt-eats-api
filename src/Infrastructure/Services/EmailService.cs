@@ -1,4 +1,6 @@
-﻿using Application.Abstractions.Services;
+﻿using System.Globalization;
+using Application.Abstractions.Services;
+using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
@@ -19,11 +21,19 @@ internal class EmailService : IEmailService
         return _configuration["Email:FromEmail"];
     }
 
+    private string? GetSmtpPort()
+    {
+        return _configuration["Email:SmtpPort"];
+    }
+
     private async Task SendEmailFunc(MimeMessage message, CancellationToken cancellationToken = default)
     {
+        string? smtpPortConfig = GetSmtpPort();
+        int smtpPort = int.Parse(smtpPortConfig!, CultureInfo.InvariantCulture);
+
         using var client = new SmtpClient();
         client.CheckCertificateRevocation = false;
-        await client.ConnectAsync("smtp.office365.com", 587, MailKit.Security.SecureSocketOptions.StartTls, cancellationToken);
+        await client.ConnectAsync(_configuration["Email:SmtpHost"] ?? "", smtpPort, SecureSocketOptions.Auto, cancellationToken);
         await client.AuthenticateAsync(_configuration["Email:FromEmail"]!, _configuration["Email:Password"]!, cancellationToken);
 
         await client.SendAsync(message, cancellationToken);

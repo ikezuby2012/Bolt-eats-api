@@ -14,6 +14,39 @@ namespace Web.Api.Endpoints.Users;
 
 public class Addresses : IEndpoint
 {
+    internal sealed record CreateNewAddressRequest(
+        string Label,
+        string Street,
+        string City,
+        string State,
+        string Country,
+        string PostalCode,
+        string LatitudeRaw,
+        string LongitudeRaw,
+        string? DeliveryInstructions,
+        string? BuildingType,
+        string? AddressLabel,
+        Dictionary<string, string>? BuildingDetails,
+        bool IsDefault
+    ) : ICommand<AddressDto>;
+
+    internal sealed record UpdateMyAddressRequest(
+            string? Label,
+            string? Street,
+            string? City,
+            string? State,
+            string? Country,
+            string? PostalCode,
+            string? LatitudeRaw,
+            string? LongitudeRaw,
+            string? DeliveryInstructions,
+            string? BuildingType,
+            string? AddressLabel,
+            Dictionary<string, string>? BuildingDetails,
+            bool IsDefault
+        );
+
+
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapGet("users/me/addresses", async (IQueryHandler<GetMyAddressesQuery, IEnumerable<AddressDto>> handler, CancellationToken cancellationToken) =>
@@ -25,9 +58,9 @@ public class Addresses : IEndpoint
             return result.Match(value => Results.Ok(ApiResponse<IEnumerable<AddressDto>>.Success(value, "My Addresses")), error => CustomResults.Problem(error));
         }).WithTags(Tags.Users).RequireAuthorization();
 
-        app.MapPost("users/me/addresses", async ([FromBody] CreateNewAddressCommand body, ICommandHandler<CreateNewAddressCommand, AddressDto> handler, CancellationToken cancellationToken) =>
+        app.MapPost("users/me/addresses", async ([FromBody] CreateNewAddressRequest body, ICommandHandler<CreateNewAddressCommand, AddressDto> handler, CancellationToken cancellationToken) =>
         {
-            var command = new CreateNewAddressCommand(body.Label, body.Street, body.City, body.State, body.Country, body.PostalCode, body.LatitudeRaw, body.LongitudeRaw, body.IsDefault);
+            var command = new CreateNewAddressCommand(body.Label, body.Street, body.City, body.State, body.Country, body.PostalCode, body.LatitudeRaw, body.LongitudeRaw, body.DeliveryInstructions, body.BuildingType, body.AddressLabel, body.BuildingDetails, body.IsDefault);
 
             Result<AddressDto> result = await handler.Handle(command, cancellationToken);
 
@@ -35,9 +68,9 @@ public class Addresses : IEndpoint
         }).WithTags(Tags.Users).RequireAuthorization();
 
 
-        app.MapPut("users/me/addresses/{Id:Guid}", async (Guid Id, [FromBody] CreateNewAddressCommand body, ICommandHandler<UpdateMyAddressCommand, AddressDto> handler, CancellationToken cancellationToken) =>
+        app.MapPut("users/me/addresses/{Id:Guid}", async (Guid Id, [FromBody] UpdateMyAddressRequest body, ICommandHandler<UpdateMyAddressCommand, AddressDto> handler, CancellationToken cancellationToken) =>
         {
-            var command = new UpdateMyAddressCommand(Id, body.Label, body.Street, body.City, body.State, body.Country, body.PostalCode, body.LatitudeRaw, body.LongitudeRaw, body.IsDefault);
+            var command = new UpdateMyAddressCommand(Id, body.Label, body.Street, body.City, body.State, body.Country, body.PostalCode, body.LatitudeRaw, body.LongitudeRaw, body.DeliveryInstructions, body.BuildingType, body.AddressLabel, body.BuildingDetails, body.IsDefault);
 
             Result<AddressDto> result = await handler.Handle(command, cancellationToken);
 

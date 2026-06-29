@@ -13,5 +13,9 @@ public sealed record CreateNewAddressCommand(
     string PostalCode,
     string LatitudeRaw,
     string LongitudeRaw,
+    string? DeliveryInstructions,
+    string? BuildingType,
+    string? AddressLabel,
+    Dictionary<string, string>? BuildingDetails,
     bool IsDefault
 ) : ICommand<AddressDto>;

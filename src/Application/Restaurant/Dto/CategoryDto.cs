@@ -23,3 +23,8 @@ public sealed class CategoryDto
         IsActive = category.IsActive,
     };
 }
+
+public record CommonCategoryDto(
+    string Name,
+    int RestaurantCount,
+    string? IconLink);

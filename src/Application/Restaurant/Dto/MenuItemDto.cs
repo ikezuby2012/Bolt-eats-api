@@ -88,3 +88,43 @@ public sealed class MenuItemDto
         Restaurant = item.Restaurant != null ? (RestaurantDto)item.Restaurant : null
     };
 }
+
+public record HomeMenuItemDto(
+    Guid MenuItemId,
+    string MenuItemName,
+    string? MenuItemImage,
+    decimal Price,
+    decimal? DiscountPrice,
+    int PrepTimeMin,
+    Guid RestaurantId,
+    string RestaurantName,
+    string? RestaurantLogo,
+    double RestaurantRating,
+    string DeliveryFee,
+    string DeliveryTime, string? Description = "");
+
+public record AfricanCuisineItemDto(
+    Guid MenuItemId,
+    string Name,
+    decimal Price,
+    decimal? DiscountPrice,
+    string? ImageLink,
+    string CategoryName,
+    Guid RestaurantId,
+    string RestaurantName,
+    string? RestaurantLogo);
+
+public sealed record HomeSectionItemDto(
+    Guid Id,
+    string Name,
+    decimal Price,
+    decimal? DiscountPrice,
+    string? ImageLink,
+    string CategoryName,
+    Guid RestaurantId,
+    string RestaurantName,
+    string? RestaurantLogo,
+    double RestaurantRating,
+    string DeliveryFee,
+    string DeliveryTime,
+    int PrepTimeMin);

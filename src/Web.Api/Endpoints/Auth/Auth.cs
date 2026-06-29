@@ -16,7 +16,7 @@ namespace Web.Api.Endpoints.Auth;
 public class Auth : IEndpoint
 {
     internal sealed record LoginRequest(string Email, string Password);
-    internal sealed record RegisterRequest(string Email, string FirstName, string LastName, string Password);
+    internal sealed record RegisterRequest(string Email, string FirstName, string LastName, string Phone, string Password);
     internal sealed record VerifyRequest(string Email, string Otp);
     internal sealed record RefreshTokenRequest(string accesstoken, string refreshToken);
 
@@ -28,7 +28,7 @@ public class Auth : IEndpoint
 
             Result<LoginSuccessDto> result = await handler.Handle(command, cancellationToken);
 
-            return result.Match(value => Results.Created($"/user/{result.Value.User.Id}", ApiResponse<LoginSuccessDto>.Success(value, $"User loggedin successfully")), error => CustomResults.Problem(error));
+            return result.Match(value => Results.Ok(ApiResponse<LoginSuccessDto>.Success(value, $"User loggedin successfully")), error => CustomResults.Problem(error));
         }).WithTags(Tags.Auth);
 
         ///
@@ -43,6 +43,7 @@ public class Auth : IEndpoint
             request.Email,
             request.FirstName,
             request.LastName,
+            request.Phone,
             request.Password);
 
             result = await handler.Handle(command, cancellationToken);
@@ -55,12 +56,12 @@ public class Auth : IEndpoint
         ///<summary>
         ///
         /// </summary>
-        app.MapPost("auth/verify-user", async (VerifyRequest request, ICommandHandler<VerifyUserCommand, CreatedUserDto> handler, CancellationToken cancellationToken) =>
+        app.MapPost("auth/verify-user", async (VerifyRequest request, ICommandHandler<VerifyUserCommand, LoginSuccessDto> handler, CancellationToken cancellationToken) =>
         {
             var command = new VerifyUserCommand(request.Email, request.Otp);
-            Result<CreatedUserDto> result = await handler.Handle(command, cancellationToken);
+            Result<LoginSuccessDto> result = await handler.Handle(command, cancellationToken);
 
-            return result.Match(value => Results.Ok(ApiResponse<CreatedUserDto>.Success(value, $"User verified successfully")), error => CustomResults.Problem(error));
+            return result.Match(value => Results.Ok(ApiResponse<LoginSuccessDto>.Success(value, $"User verified successfully")), error => CustomResults.Problem(error));
         }).WithTags(Tags.Auth);
 
         ///

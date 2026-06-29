@@ -1,4 +1,5 @@
-﻿using Application.Abstractions.Authentication;
+﻿using System.Globalization;
+using Application.Abstractions.Authentication;
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
 using Application.Users.Dto;
@@ -18,6 +19,16 @@ internal sealed class UpdateMyAddressCommandHandler(IApplicationDbContext contex
         if (address == null)
         {
             return Result.Failure<AddressDto>(Domain.Common.CommonErrors.CustomErrorMessage($"Address with ID {request.Id} not found"));
+        }
+
+        if (request.IsDefault)
+        {
+            await context.Addresses
+                .Where(a => a.UserId == userId &&
+                            a.Id != request.Id)
+                .ExecuteUpdateAsync(
+                    setters => setters.SetProperty(a => a.IsDefault, false),
+                    cancellationToken);
         }
 
         if (!string.IsNullOrEmpty(request.Label))
@@ -53,14 +64,34 @@ internal sealed class UpdateMyAddressCommandHandler(IApplicationDbContext contex
             address.LongitudeRaw = request.LongitudeRaw;
         }
 
-        if (!string.IsNullOrEmpty(request.LatitudeRaw) && decimal.TryParse(request.LatitudeRaw, out decimal lat))
+        if (!string.IsNullOrWhiteSpace(request.DeliveryInstructions))
         {
-            address.Latitude = lat;
+            address.DeliveryInstructions = request.DeliveryInstructions;
         }
 
-        if (!string.IsNullOrEmpty(request.LongitudeRaw) && decimal.TryParse(request.LongitudeRaw, out decimal lng))
+        if (!string.IsNullOrWhiteSpace(request.BuildingType))
         {
+            address.BuildingType = request.BuildingType;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.AddressLabel))
+        {
+            address.AddressLabel = request.AddressLabel;
+        }
+
+        if (request.BuildingDetails is not null)
+        {
+            address.BuildingDetails = request.BuildingDetails;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.LatitudeRaw) && !string.IsNullOrWhiteSpace(request.LongitudeRaw) && decimal.TryParse(request.LatitudeRaw, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal lat) && decimal.TryParse(request.LongitudeRaw, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal lng))
+        {
+            address.Latitude = lat;
             address.Longitude = lng;
+
+            address.Location = Domain.Address.Address.CreatePoint(
+                (double)lat,
+                (double)lng);
         }
         address.UpdatedAt = dateTimeProvider.UtcNow;
         address.UpdatedBy = userId.ToString();

@@ -21,9 +21,9 @@ public class AddMenuItemCommandValidator : AbstractValidator<AddMenuItemCommand>
             .WithMessage("Discount price must be less than the regular price.")
             .When(x => x.DiscountPrice.HasValue);
 
-        RuleFor(x => x.Calories)
-            .GreaterThan(0)
-            .When(x => x.Calories.HasValue);
+        //RuleFor(x => x.Calories)
+        //    .GreaterThan(0)
+        //    .When(x => x.Calories.HasValue);
 
         RuleFor(x => x.PrepTimeMin)
             .GreaterThan(0)

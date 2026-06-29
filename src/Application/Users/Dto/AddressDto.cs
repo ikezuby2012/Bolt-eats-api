@@ -40,6 +40,10 @@ public sealed class AddressDto
 
     [JsonPropertyName("updatedAt")]
     public DateTime? UpdatedAt { get; set; }
+    public string? DeliveryInstructions { get; set; }
+    public string? BuildingType { get; set; }
+    public string? AddressLabel { get; set; }
+    public Dictionary<string, string>? BuildingDetails { get; set; } = new();
 
 
     public static explicit operator AddressDto(Domain.Address.Address address) => new AddressDto
@@ -58,6 +62,10 @@ public sealed class AddressDto
         LongitudeRaw = address.LongitudeRaw,
         IsDefault = address.IsDefault,
         CreatedAt = address.CreatedAt,
+        DeliveryInstructions = address.DeliveryInstructions,
+        BuildingType = address.BuildingType,
+        AddressLabel = address.AddressLabel,
+        BuildingDetails = address.BuildingDetails,
         UpdatedAt = address.UpdatedAt
     };
 }
