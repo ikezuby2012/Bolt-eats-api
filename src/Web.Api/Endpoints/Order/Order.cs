@@ -9,6 +9,7 @@ using Application.Orders.GetOrderById;
 using Application.Orders.GetOrderHistory;
 using Application.Orders.GetRestaurantOrders;
 using Application.Orders.GetRiderActiveOrder;
+using Application.Orders.TestAutoAsync;
 using Microsoft.AspNetCore.Mvc;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -18,7 +19,13 @@ namespace Web.Api.Endpoints.Order;
 
 public class Order : IEndpoint
 {
-    internal sealed record CreateOrderRequest(string? CustomerNotes);
+    internal sealed record CreateOrderRequest(
+    Guid? AddressId,
+    string? ContactEmail,
+    string? contactName,
+    string? ContactPhone,
+    string? CustomerNotes);
+
     internal sealed record GetAllOrdersAdminParams(
     string? statusFilter,
     Guid? RestaurantId,
@@ -31,14 +38,14 @@ public class Order : IEndpoint
 
     internal sealed record GetOrderHistoryParams(int Page = 1, int PageSize = 20, DateTime? DateFrom = null, DateTime? DateTo = null);
     internal sealed record GetRestaurantOrdersParams(Guid RestaurantId, string? Status, int Page = 1, int PageSize = 20);
-    internal sealed record UpdateOrderStatusRequest(string Reason);
+    internal sealed record UpdateOrderStatusRequest(string status);
     internal sealed record AssignRiderRequest(Guid RiderId);
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapPost("order", async ([FromBody] CreateOrderRequest body, ICommandHandler<CreateOrderCommand, OrderDto> handler, CancellationToken cancellationToken) =>
         {
-            var command = new CreateOrderCommand(body.CustomerNotes);
+            var command = new CreateOrderCommand(body.AddressId, body.ContactEmail, body.contactName, body.ContactPhone, body.CustomerNotes);
 
             Result<OrderDto> result = await handler.Handle(command, cancellationToken);
 
@@ -94,7 +101,7 @@ public class Order : IEndpoint
 
         app.MapPut("order/{Id:Guid}/status", async (Guid Id, [FromBody] UpdateOrderStatusRequest body, ICommandHandler<AdvanceOrderStatusCommand, OrderDto> handler, CancellationToken cancellationToken) =>
         {
-            var query = new AdvanceOrderStatusCommand(Id, body.Reason);
+            var query = new AdvanceOrderStatusCommand(Id, body.status);
 
             Result<OrderDto> result = await handler.Handle(query, cancellationToken);
 
@@ -119,5 +126,26 @@ public class Order : IEndpoint
 
             return result.Match(value => Results.Ok(ApiResponse<OrderDto>.Success(value, "Rider has been assigned to this order")), error => CustomResults.Problem(error));
         }).WithTags(Tags.Order).RequireAuthorization();
+
+        // Endpoint — add to your order group
+
+        app.MapGet("order/{id:guid}/test-assign", async (
+            Guid id,
+            ICommandHandler<TestAutoAsyncCommand> handler,
+            CancellationToken ct) =>
+        {
+            Result result = await handler.Handle(
+                new TestAutoAsyncCommand(id), ct);
+
+            return result.Match(
+                () => Results.Ok(ApiResponse<string>.Success(
+                    "Auto assignment triggered successfully.")),
+                error => CustomResults.Problem(error));
+        })
+        .WithName("TestAutoAssign")
+        .WithTags(Tags.Order)
+        .RequireAuthorization()   // Admin only — test endpoint
+        .Produces<ApiResponse<string>>()
+        .Produces<ProblemDetails>(400);
     }
 }

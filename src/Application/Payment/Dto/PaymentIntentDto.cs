@@ -7,10 +7,11 @@ namespace Application.Payment.Dto;
 public record PaymentIntentDto(
     Guid PaymentId,
     string GatewayReference,
-    string ClientSecret,       // Flutter passes this to Stripe SDK
+    string? ClientSecret,       // Flutter passes this to Stripe SDK
     decimal Amount,
     string Currency,
-    PaymentGateway Gateway);
+    PaymentGateway Gateway,
+    string? CheckoutLink);
 
 public class PaymentHistoryDto : IAuditable<Guid>
 {

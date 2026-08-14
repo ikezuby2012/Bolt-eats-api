@@ -52,17 +52,30 @@ public sealed class MonnifyPaymentGateway(IConfiguration config, HttpClient http
         try
         {
             string token = await AuthenticateAsync(cancellationToken);
-            string reference = $"UE-{request.OrderId}-{Guid.NewGuid():N}"[..30];
+            string reference = $"ORD-{request.OrderId:N}"[..30];
+
+            string customerName = "Customer";
+            string customerEmail = "customer@example.com";
+            if (request.Metadata != null && request.Metadata.TryGetValue("customer_name", out string? name))
+            {
+                customerName = name;
+            }
+
+            if (request.Metadata != null && request.Metadata.TryGetValue("customer_email", out string? cusEmail))
+            {
+                customerEmail = cusEmail;
+            }
 
             var payload = new
             {
                 amount = request.Amount,
-                customerName = "Customer",
-                customerEmail = "customer@example.com",
+                customerName,
+                customerEmail,
                 paymentReference = reference,
                 paymentDescription = request.Description ?? "Chill Eats",
                 currencyCode = request.Currency.ToUpperInvariant(),
                 contractCode = ContractCode,
+                redirectUrl = config["Monnify:RedirectUrl"],
                 paymentMethods = new[] { "CARD", "ACCOUNT_TRANSFER" }
             };
 

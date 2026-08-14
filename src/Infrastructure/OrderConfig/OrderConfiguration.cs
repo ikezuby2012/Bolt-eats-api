@@ -37,8 +37,14 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
             .IsRequired()
             .HasColumnName("restaurant_id");
 
+        builder.Property(o => o.CartId)
+           .HasColumnName("cart_id");
+
         builder.Property(o => o.RiderId)
             .HasColumnName("rider_id");
+
+        builder.Property(o => o.OfferedToRiderId)
+           .HasColumnName("offered_to_rider_id");
 
         builder.Property(o => o.AddressId)
             .IsRequired()
@@ -86,6 +92,12 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasMaxLength(2000)
             .HasColumnName("notes");
 
+        builder.Property(o => o.ContactEmail).HasMaxLength(300).HasColumnName("contact_email");
+        builder.Property(o => o.ContactPhone).HasMaxLength(20).HasColumnName("contact_phone");
+        builder.Property(o => o.ContactName).HasMaxLength(400).HasColumnName("contact_name");
+
+        builder.Property(o => o.OrderCode).HasMaxLength(20).HasColumnName("order_code").IsRequired();
+
         builder.Property(o => o.CancellationNotes)
             .HasMaxLength(2000)
             .HasColumnName("cancellation_notes");
@@ -126,6 +138,10 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasColumnType("timestamp with time zone")
             .HasColumnName("refunded_at");
 
+        builder.Property(o => o.OfferedAt)
+           .HasColumnType("timestamp with time zone")
+           .HasColumnName("offered_at");
+
         builder.Property(o => o.UpdatedBy)
             .HasMaxLength(100)
             .HasColumnName("updated_by");
@@ -161,12 +177,25 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
             .IsRequired(false)
             .HasConstraintName("fk_order_rider");
 
+        builder.HasOne(o => o.OfferedToRider)
+           .WithMany()
+           .HasForeignKey(o => o.OfferedToRiderId)
+           .OnDelete(DeleteBehavior.SetNull)
+           .IsRequired(false)
+           .HasConstraintName("fk_order_offered_to_rider");
+
         builder.HasOne(o => o.Address)
             .WithMany()
             .HasForeignKey(o => o.AddressId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired()
             .HasConstraintName("fk_order_address");
+
+        builder.HasOne(o => o.Cart)
+           .WithMany()
+           .HasForeignKey(o => o.CartId)
+           .OnDelete(DeleteBehavior.SetNull)
+           .HasConstraintName("fk_order_cart");
 
         builder.HasOne(o => o.OrderStatus)
            .WithMany()

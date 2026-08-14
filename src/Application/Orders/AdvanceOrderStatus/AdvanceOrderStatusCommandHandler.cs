@@ -1,6 +1,8 @@
 ﻿using Application.Abstractions.Authentication;
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
+using Application.Abstractions.Services.Order;
+using Application.Abstractions.Services.Rider;
 using Application.Orders.Dto;
 using Domain.Common;
 using Domain.Notification;
@@ -12,7 +14,7 @@ using SharedKernel;
 
 namespace Application.Orders.AdvanceOrderStatus;
 
-internal sealed class AdvanceOrderStatusCommandHandler(IApplicationDbContext context, IUserContext userContext) : ICommandHandler<AdvanceOrderStatusCommand, OrderDto>
+internal sealed class AdvanceOrderStatusCommandHandler(IApplicationDbContext context, IUserContext userContext, IDateTimeProvider dateTimeProvider, IOrderHubService orderHubService, IRiderAssignmentService riderAssignmentService) : ICommandHandler<AdvanceOrderStatusCommand, OrderDto>
 {
     public async Task<Result<OrderDto>> Handle(AdvanceOrderStatusCommand command, CancellationToken cancellationToken)
     {
@@ -55,6 +57,7 @@ internal sealed class AdvanceOrderStatusCommandHandler(IApplicationDbContext con
         {
             return Result.Failure<OrderDto>(CommonErrors.CustomErrorMessage("this order is not assigned to you."));
         }
+
         string userRole = UserRole.FromValue(customer.RoleId)!.Name;
         var orderStatus = EOrderStatus.FromName(command.Status);
 
@@ -79,19 +82,19 @@ internal sealed class AdvanceOrderStatusCommandHandler(IApplicationDbContext con
         switch (orderStatus)
         {
             case EOrderStatus status when status == EOrderStatus.Accepted:
-                order.AcceptedAt = DateTime.UtcNow;
+                order.AcceptedAt = dateTimeProvider.UtcNow;
                 break;
-            //case EOrderStatus status when status == EOrderStatus.Preparing:
-            //    order.PreparingAt = DateTime.UtcNow;
-            //    break;
+            case EOrderStatus status when status == EOrderStatus.Preparing:
+                //order.PreparingAt = DateTime.UtcNow;
+                break;
             case EOrderStatus status when status == EOrderStatus.ReadyForPickup:
-                order.PickedUpAt = DateTime.UtcNow;
+                order.PickedUpAt = dateTimeProvider.UtcNow;
                 break;
             case EOrderStatus status when status == EOrderStatus.Refunded:
-                order.RefundedAt = DateTime.UtcNow;
+                order.RefundedAt = dateTimeProvider.UtcNow;
                 break;
             case EOrderStatus status when status == EOrderStatus.Delivered:
-                order.DeliveredAt = DateTime.UtcNow;
+                order.DeliveredAt = dateTimeProvider.UtcNow;
                 break;
         }
 
@@ -140,8 +143,29 @@ internal sealed class AdvanceOrderStatusCommandHandler(IApplicationDbContext con
 
         await context.SaveChangesAsync(cancellationToken);
 
+        await orderHubService.NotifyOrderStatusChangedAsync(
+            orderId: order.Id,
+            customerId: order.CustomerId,
+            restaurantId: order.RestaurantId,
+            riderId: order.RiderId,
+            newStatus: newStatus.Name,
+            statusLabel: newStatus.Name,
+            updatedAt: dateTimeProvider.Now,
+            cancellationToken: cancellationToken);
+
+        if (newStatus == EOrderStatus.ReadyForPickup &&
+           order.RiderId is null &&
+           order.OfferedToRiderId is null)
+        {
+            // Fire and forget — does not block the owner's response
+            _ = riderAssignmentService.TryAutoAssignAsync(
+                order.Id,
+                CancellationToken.None);   // use None so it survives request cancellation
+        }
+
         return Result.Success((OrderDto)order);
     }
+
 
     private int MapToNotificationType(int Id)
     {

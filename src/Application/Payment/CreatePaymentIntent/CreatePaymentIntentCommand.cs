@@ -3,4 +3,4 @@ using Application.Payment.Dto;
 
 namespace Application.Payment.CreatePaymentIntent;
 
-public sealed record CreatePaymentIntentCommand(Guid CartId, int GatewayId = 2) : ICommand<PaymentIntentDto>;
+public sealed record CreatePaymentIntentCommand(Guid OrderId, int GatewayId = 2) : ICommand<PaymentIntentDto>;

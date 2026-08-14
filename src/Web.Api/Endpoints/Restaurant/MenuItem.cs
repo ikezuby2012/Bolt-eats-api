@@ -4,7 +4,10 @@ using Application.Abstractions.Services.UploadResult;
 using Application.Restaurant.AddMenuItem;
 using Application.Restaurant.DeleteMenuItem;
 using Application.Restaurant.Dto;
+using Application.Restaurant.GetNearbyRestaurantMenuItem;
+using Application.Restaurant.GetRelatedMenuItemsByRestaurant;
 using Application.Restaurant.GetRestaurantMenu;
+using Application.Restaurant.GetRestaurantMenuItemDetails;
 using Application.Restaurant.UpdateMenuItem;
 using Microsoft.AspNetCore.Mvc;
 using SharedKernel;
@@ -149,5 +152,61 @@ public class MenuItem : IEndpoint
                  () => Results.NoContent(),
                  error => CustomResults.Problem(error));
         }).WithTags(Tags.Restaurant).RequireAuthorization();
+
+        app.MapGet("restaurant/nearby/menu-item", async (IQueryHandler<GetNearbyRestaurantMenuItemsQuery, PaginatedResult<NearbyMenuItemDto>> handler,
+                CancellationToken cancellationToken,
+                [FromQuery] double lat = 0,
+                [FromQuery] double lng = 0,
+                [FromQuery] double radiusKm = 5,
+                [FromQuery] Guid? categoryId = null,
+                [FromQuery] string? search = null,
+                [FromQuery] int pageNumber = 1,
+                [FromQuery] int pageSize = 20) =>
+        {
+            var query = new GetNearbyRestaurantMenuItemsQuery(lat, lng, radiusKm, categoryId, search, pageNumber, pageSize);
+
+            Result<PaginatedResult<NearbyMenuItemDto>> result = await handler.Handle(query, cancellationToken);
+
+            return result.Match(value => Results.Ok(ApiResponse<PaginatedResult<NearbyMenuItemDto>>.Success(value, "All Nearby Restaurant Menu item")), error => CustomResults.Problem(error));
+        }).WithTags(Tags.Restaurant).WithName("GetNearbyRestaurantMenuItems").Produces<ApiResponse<PaginatedResult<NearbyMenuItemDto>>>();
+
+        // GET restaurant/menu-item/{id:guid}
+        app.MapGet("restaurant/menu-item/{id:guid}", async (
+            Guid id,
+            IQueryHandler<GetRestaurantMenuItemDetailsQuery, MenuItemDetailDto> handler,
+            CancellationToken ct) =>
+        {
+
+            var query = new GetRestaurantMenuItemDetailsQuery(id);
+
+            Result<MenuItemDetailDto> result = await handler.Handle(query, ct);
+
+            return result.Match(value => Results.Ok(ApiResponse<MenuItemDetailDto>.Success(value, "Menu item Details Information")), error => CustomResults.Problem(error));
+        })
+        .WithName("GetMenuItemDetail")
+        .WithTags(Tags.Restaurant)
+        .Produces<ApiResponse<MenuItemDetailDto>>()
+        .Produces(404);
+
+        // GET restaurant/{id:guid}/menu-item/related
+        app.MapGet("restaurant/{id:guid}/menu-item/related", async (
+            Guid id,
+            IQueryHandler<GetRelatedMenuItemsByRestaurantQuery, IReadOnlyList<RelatedMenuItemDto>> handler,
+            CancellationToken ct,
+            [FromQuery] Guid excludeMenuItemId,
+            [FromQuery] int limit = 10) =>
+        {
+            Result<IReadOnlyList<RelatedMenuItemDto>> result = await handler.Handle(
+                new GetRelatedMenuItemsByRestaurantQuery(id, excludeMenuItemId, limit), ct);
+
+            return result.Match(
+                value => Results.Ok(
+                    ApiResponse<IReadOnlyList<RelatedMenuItemDto>>.Success(value)),
+                error => CustomResults.Problem(error));
+        })
+        .WithName("GetRelatedMenuItemsByRestaurant")
+        .WithTags(Tags.Restaurant)
+        .Produces<ApiResponse<IReadOnlyList<RelatedMenuItemDto>>>()
+        .Produces(404);
     }
 }

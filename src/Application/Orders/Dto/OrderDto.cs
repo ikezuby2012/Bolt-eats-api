@@ -21,10 +21,15 @@ public class OrderDto : IAuditable<Guid>
     public decimal DeliveryFee { get; set; }
     public decimal? Discount { get; set; }
     public decimal Tax { get; set; }
+    public string? ContactEmail { get; set; }
+    public string? ContactPhone { get; set; }
+    public string? ContactName { get; set; }
+    public string OrderCode { get; set; }
     public decimal Total { get; set; }
     public string? PromoCode { get; set; }
     public string? PaymentRef { get; set; }
     public string? Notes { get; set; }
+    public string? CancellationNotes { get; set; }
     public DateTime? CheckoutAt { get; set; }
     public DateTime? AcceptedAt { get; set; }
     public DateTime? PickedUpAt { get; set; }
@@ -33,6 +38,8 @@ public class OrderDto : IAuditable<Guid>
     public string? CreatedBy { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public string? UpdatedBy { get; set; }
+    public int? EstimatedDeliveryMinutes { get; set; }
+    public int? EstimatedTravelMinutes { get; set; }
 
     [JsonIgnore]
     public bool IsSoftDeleted { get; set; }
@@ -44,7 +51,7 @@ public class OrderDto : IAuditable<Guid>
         RestaurantId = order.RestaurantId,
         RiderId = order.RiderId,
         AddressId = order.AddressId,
-        OrderStatus= order.OrderStatusId is int statusId ? Domain.Order.EOrderStatus.FromValue(statusId)!.Name : "",
+        OrderStatus = order.OrderStatusId is int statusId ? Domain.Order.EOrderStatus.FromValue(statusId)!.Name : "",
         SubTotal = order.SubTotal,
         DeliveryFee = order.DeliveryFee,
         Discount = order.Discount,
@@ -53,6 +60,13 @@ public class OrderDto : IAuditable<Guid>
         PromoCode = order.PromoCode,
         PaymentRef = order.PaymentRef,
         Notes = order.Notes,
+        ContactEmail = order.ContactEmail,
+        ContactName = order.ContactName,
+        ContactPhone = order.ContactPhone,
+        CancellationNotes = order.CancellationNotes,
+        OrderCode = order.OrderCode,
+        EstimatedDeliveryMinutes = order.EstimatedDeliveryMinutes,
+        EstimatedTravelMinutes = order.EstimatedTravelMinutes,
         CheckoutAt = order.CheckoutAt,
         AcceptedAt = order.AcceptedAt,
         PickedUpAt = order.PickedUpAt,

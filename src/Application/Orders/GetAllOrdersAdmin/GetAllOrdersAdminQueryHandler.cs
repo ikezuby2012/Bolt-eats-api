@@ -28,10 +28,14 @@ internal sealed class GetAllOrdersAdminQueryHandler(IApplicationDbContext contex
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
             .Select(o => new OrderSummaryDto(
-                o.Id,
+                   o.Id,
+                o.OrderCode,
                 o.RestaurantId,
                 o.Restaurant.Name,
-                request.statusFilter ?? "",
+                o.Restaurant.LogoUrl ?? "",
+                o.OrderStatusId,
+                o.EstimatedDeliveryMinutes,
+                EOrderStatus.FromValue(o.OrderStatusId)!.Name,
                 o.Total,
                 o.Items.Count,
                 o.CreatedAt))

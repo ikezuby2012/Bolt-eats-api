@@ -8,6 +8,7 @@ using SharedKernel;
 
 
 namespace Application.Tracking.PushRiderLocation;
+
 internal sealed class PushRiderLocationCommandHandler(IApplicationDbContext db, IRiderLocationCache locationCache) : ICommandHandler<PushRiderLocationCommand>
 {
     private const double MinAccuracyMetres = 50.0;
@@ -24,6 +25,7 @@ internal sealed class PushRiderLocationCommandHandler(IApplicationDbContext db, 
         {
             return Result.Failure(Domain.Common.CommonErrors.CustomErrorMessage("No active order found for this rider!"));
         }
+
         if (command.Accuracy.HasValue && command.Accuracy > MinAccuracyMetres)
         {
             return Result.Success();

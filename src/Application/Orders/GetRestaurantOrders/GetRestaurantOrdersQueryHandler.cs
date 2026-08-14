@@ -38,10 +38,14 @@ internal class GetRestaurantOrdersQueryHandler(IApplicationDbContext context, IU
             .Skip((query.Page - 1) * query.PageSize)
             .Take(query.PageSize)
             .Select(o => new OrderSummaryDto(
-                o.Id,
+                 o.Id,
+                o.OrderCode,
                 o.RestaurantId,
                 o.Restaurant.Name,
-                query.Status ?? "",
+                o.Restaurant.LogoUrl ?? "",
+                o.OrderStatusId,
+                o.EstimatedDeliveryMinutes,
+                EOrderStatus.FromValue(o.OrderStatusId)!.Name,
                 o.Total,
                 o.Items.Count,
                 o.CreatedAt))

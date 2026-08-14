@@ -47,7 +47,7 @@ internal sealed class ConfirmPaymentCommandHandler(IApplicationDbContext context
         payment.CustomerNotes = command.CustomerNotes ?? "";
         payment.CreatedAt = dateTimeProvider.UtcNow;
 
-        payment.Raise(new PaymentConfirmedEvent(payment.Id, command.CustomerNotes));
+        //payment.Raise(new PaymentConfirmedEvent(payment.Id, command.CustomerNotes));
 
         await context.SaveChangesAsync(cancellationToken);
 

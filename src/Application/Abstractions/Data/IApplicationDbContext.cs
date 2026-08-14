@@ -24,6 +24,7 @@ public interface IApplicationDbContext
     DbSet<Domain.Payment.Payment> Payment { get; }
     DbSet<Domain.Rider.RiderLocation> RiderLocations { get; }
     DbSet<Domain.Notification.Notification> Notification { get; }
+    DbSet<Domain.Rider.RiderProfile> RiderProfiles { get; }
     DbSet<DeviceToken> DeviceTokens { get; }
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

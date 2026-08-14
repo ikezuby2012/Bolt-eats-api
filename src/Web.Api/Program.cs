@@ -95,6 +95,8 @@ app.UseHangfireDashboard("/jobs");
 
 app.MapControllers();
 app.MapHub<TrackingHub>("/hubs/tracking");
+app.MapHub<PaymentHub>("/hubs/payment");
+app.MapHub<OrderHub>("/hubs/order");
 
 /// ========================================
 /// Recurring Jobs

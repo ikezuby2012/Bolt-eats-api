@@ -4,5 +4,4 @@ using SharedKernel;
 
 namespace Application.Cart.GetUserCart;
 
-public sealed record GetUserCartQuery(int PageSize = 1000,
-    int pageNumber = 1) : IQuery<PaginatedResult<CartDto>>;
+public sealed record GetUserCartQuery : IQuery<CartDto>;

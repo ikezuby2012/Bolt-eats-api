@@ -53,7 +53,7 @@ internal class EmailService : IEmailService
         };
 
         string address2 = GetSenderEmail();
-        message.From.Add(new MailboxAddress("UberEats", address2!));
+        message.From.Add(new MailboxAddress("ChillEats", address2!));
         message.Body = bodyBuilder.ToMessageBody();
 
         message.To.Add(new MailboxAddress(name, email));
@@ -84,7 +84,7 @@ internal class EmailService : IEmailService
             await bodyBuilder.Attachments.AddAsync(attachmentFileName, memoryStream, ContentType.Parse("application/pdf"), cancellationToken: cancellationToken);
         }
 
-        message.From.Add(new MailboxAddress("UberEats", GetSenderEmail()!));
+        message.From.Add(new MailboxAddress("ChillEats", GetSenderEmail()!));
         message.Body = bodyBuilder.ToMessageBody();
 
         message.To.Add(new MailboxAddress(name, email));

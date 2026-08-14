@@ -78,8 +78,6 @@ public sealed class RestaurantDto
     public string? UpdatedBy { get; set; }
     public ICollection<AddressDto>? Addresses { get; set; }
 
-
-
     public static explicit operator RestaurantDto(Domain.Restaurant.Restaurant restaurant) => new RestaurantDto
     {
         Id = restaurant.Id,

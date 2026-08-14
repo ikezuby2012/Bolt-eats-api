@@ -8,6 +8,7 @@ using NetTopologySuite.Geometries;
 using SharedKernel;
 
 namespace Application.Restaurant.GetNearbyRestaurant;
+
 internal sealed class GetNearbyRestaurantQueryHandler(IApplicationDbContext context) : IQueryHandler<GetNearbyRestaurantQuery, PaginatedResult<RestaurantDto>>
 {
     private static readonly GeometryFactory _geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);

@@ -5,6 +5,7 @@ using Application.Abstractions.Services;
 using Application.Abstractions.Services.Payments;
 using Application.Payment.Dto;
 using Domain.Common;
+using Domain.Order;
 using Domain.Payment;
 using Domain.Users;
 using Microsoft.EntityFrameworkCore;
@@ -17,9 +18,18 @@ internal class CreatePaymentIntentCommandHandler(IApplicationDbContext context, 
     public async Task<Result<PaymentIntentDto>> Handle(CreatePaymentIntentCommand command, CancellationToken cancellationToken)
     {
         Guid userId = userContext.UserId;
+
+        Domain.Order.Order? order = await context.Order.FirstOrDefaultAsync(x => x.Id == command.OrderId, cancellationToken);
+
+        if (order is null)
+        {
+            return Result.Failure<PaymentIntentDto>(CommonErrors.CustomErrorMessage("Order was not found"));
+        }
+
+
         Domain.Cart.Cart? cart = await context.Cart.Include(c => c.Restaurant).Include(c => c.Items).ThenInclude(i => i.MenuItem)
             .FirstOrDefaultAsync(
-                c => c.Id == command.CartId &&
+                c => c.Id == order.CartId &&
                      c.UserId == userId, cancellationToken);
 
         if (cart is null)
@@ -31,6 +41,7 @@ internal class CreatePaymentIntentCommandHandler(IApplicationDbContext context, 
         {
             return Result.Failure<PaymentIntentDto>(CommonErrors.CustomErrorMessage("Cart is empty"));
         }
+
 
         Domain.Cart.CartSummaryDto summary = cartService.Calculate(cart);
 
@@ -51,8 +62,10 @@ internal class CreatePaymentIntentCommandHandler(IApplicationDbContext context, 
         string gatewayCustomerId = await EnsureGatewayCustomerAsync(
             user!, gateway.Gateway, cancellationToken);
 
+        var paymentId = Guid.NewGuid();
+
         CreateIntentResult intentResult = await gateway.CreateIntentAsync(new CreateIntentRequest(
-            OrderId: Guid.Empty,   // order not created yet
+            OrderId: paymentId,
             Amount: summary.Total,
             Currency: "NGN",
             GatewayCustomerId: gatewayCustomerId,
@@ -60,22 +73,28 @@ internal class CreatePaymentIntentCommandHandler(IApplicationDbContext context, 
             Metadata: new Dictionary<string, string>
             {
                 ["cart_id"] = cart.Id.ToString(),
-                ["user_id"] = userId.ToString()
+                ["user_id"] = userId.ToString(),
+                ["customer_name"] = order.ContactName ?? "customer",
+                ["customer_email"] = order.ContactEmail ?? "customer@example.com"
             }),
             cancellationToken);
 
         if (!intentResult.IsSuccess)
         {
+            order.OrderStatusId = EOrderStatus.Cancelled.Id;
+            order.CancellationNotes = "Payment initialization failed.";
+            await context.SaveChangesAsync(cancellationToken);
+
             return Result.Failure<PaymentIntentDto>(CommonErrors.CustomErrorMessage(intentResult.FailureMessage!));
         }
 
         var payment = new Domain.Payment.Payment
         {
-            Id = Guid.NewGuid(),
+            Id = paymentId,
             CustomerId = userId,
-            OrderId = Guid.Empty,           // populated after order placement
+            OrderId = command.OrderId,
             GatewayId = gateway.Gateway,
-            Status = PaymentStatus.Pending,
+            StatusId = PaymentStatus.Pending.Id,
             Amount = summary.Total,
             Currency = "NGN",
             GatewayReference = intentResult.GatewayReference!,
@@ -88,6 +107,8 @@ internal class CreatePaymentIntentCommandHandler(IApplicationDbContext context, 
         };
 
         await context.Payment.AddAsync(payment, cancellationToken);
+
+        //cart.IsSoftDeleted = true;
         await context.SaveChangesAsync(cancellationToken);
 
         return new PaymentIntentDto(PaymentId: payment.Id,
@@ -95,7 +116,8 @@ internal class CreatePaymentIntentCommandHandler(IApplicationDbContext context, 
             ClientSecret: payment.ClientSecret!,
             Amount: payment.Amount,
             Currency: payment.Currency,
-            Gateway: payment.Gateway);
+            Gateway: payment.Gateway,
+            CheckoutLink: gateway.Gateway == Domain.Payment.PaymentGateway.Monnify.Id ? intentResult.ClientSecret : null);
     }
 
     private async Task<string> EnsureGatewayCustomerAsync(

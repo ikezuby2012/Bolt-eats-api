@@ -38,6 +38,8 @@ public sealed class ApplicationDbContext(
     public DbSet<Notification> Notification => Set<Notification>();
     public DbSet<DeviceToken> DeviceTokens => Set<DeviceToken>();
 
+    public DbSet<RiderProfile> RiderProfiles => Set<RiderProfile>();
+
     //public DatabaseFacade Database => base.Database;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

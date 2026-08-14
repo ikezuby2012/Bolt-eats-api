@@ -7,6 +7,7 @@ using Application.Payment.DetachPaymentMethod;
 using Application.Payment.Dto;
 using Application.Payment.GetPaymentHistory;
 using Application.Payment.GetPaymentMethods;
+using Application.Payment.GetPaymentStatus;
 using Microsoft.AspNetCore.Mvc;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -16,7 +17,7 @@ namespace Web.Api.Endpoints.Payment;
 
 public class Payment : IEndpoint
 {
-    internal sealed record CreateIntentRequest(Guid CartId, int GatewayId = 2); // lets use monnify as our default for now
+    internal sealed record CreateIntentRequest(Guid OrderId, int GatewayId = 2); // lets use monnify as our default for now
     internal sealed record ConfirmPaymentRequest(Guid PaymentId, string? CustomerNotes);
     internal sealed record AttachMethodRequest(string PaymentMethodToken, int GatewayId = 2);
 
@@ -26,7 +27,7 @@ public class Payment : IEndpoint
 
         group.MapPost("/intent", async ([FromBody] CreateIntentRequest body, ICommandHandler<CreatePaymentIntentCommand, PaymentIntentDto> handler, CancellationToken cancellationToken) =>
         {
-            var command = new CreatePaymentIntentCommand(body.CartId, body.GatewayId);
+            var command = new CreatePaymentIntentCommand(body.OrderId, body.GatewayId);
 
             Result<PaymentIntentDto> result = await handler.Handle(command, cancellationToken);
 
@@ -109,5 +110,25 @@ public class Payment : IEndpoint
         .WithName("GetPaymentHistory")
         .RequireAuthorization()
         .Produces<PaginatedResult<PaymentHistoryDto>>();
+
+        group.MapGet("{id:guid}/status", async (
+            Guid id,
+            IUserContext ctx,
+            IQueryHandler<GetPaymentStatusQuery, PaymentDto> mediator,
+            CancellationToken ct) =>
+        {
+            Result<PaymentDto> result = await mediator.Handle(
+                new GetPaymentStatusQuery(id, ctx.UserId), ct);
+
+            return result.Match(
+                value => Results.Ok(
+                    ApiResponse<PaymentDto>.Success(value)),
+                error => CustomResults.Problem(error));
+        })
+        .WithName("GetPaymentStatus")
+        .WithTags(Tags.Payment)
+        .RequireAuthorization()
+        .Produces<ApiResponse<PaymentDto>>()
+        .Produces(404);
     }
 }

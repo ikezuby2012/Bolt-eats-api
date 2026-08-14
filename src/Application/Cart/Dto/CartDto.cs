@@ -1,9 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using Application.Restaurant.Dto;
 using Application.Users.Dto;
-using Domain.Address;
-using Domain.Cart;
-using Domain.Restaurant;
 using SharedKernel;
 
 namespace Application.Cart.Dto;
@@ -38,7 +35,37 @@ public class CartDto : IAuditable<Guid>
         UpdatedAt = cart.UpdatedAt,
         UpdatedBy = cart.UpdatedBy,
         items = cart.Items?
-                .Select(a => (CartItemDto)a)
-                .ToList()
+        .Select(a => new CartItemDto
+        {
+            Id = a.Id,
+            CartId = a.CartId,
+            MenuItemId = a.MenuItemId,
+            Quantity = a.Quantity,
+            UnitPrice = a.UnitPrice,
+            Notes = a.Notes,
+            CreatedAt = a.CreatedAt,
+            CreatedBy = a.CreatedBy,
+            UpdatedAt = a.UpdatedAt,
+            UpdatedBy = a.UpdatedBy,
+            MenuItem = a.MenuItem == null ? null : new MenuItemDto
+            {
+                Id = a.MenuItem.Id,
+                RestaurantId = a.MenuItem.RestaurantId,
+                CategoryId = a.MenuItem.CategoryId,
+                Name = a.MenuItem.Name,
+                Description = a.MenuItem.Description,
+                Price = a.MenuItem.Price,
+                DiscountPrice = a.MenuItem.DiscountPrice,
+                ImageUrl = a.MenuItem.ImageUrl,
+                Calories = a.MenuItem.Calories,
+                PrepTimeMin = a.MenuItem.PrepTimeMin,
+                IsAvailable = a.MenuItem.IsAvailable,
+                IsPopular = a.MenuItem.IsPopular,
+                SortOrder = a.MenuItem.SortOrder,
+                CreatedAt = a.MenuItem.CreatedAt,
+                UpdatedAt = a.MenuItem.UpdatedAt
+            }
+        })
+        .ToList()
     };
 }

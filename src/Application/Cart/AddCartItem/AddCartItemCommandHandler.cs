@@ -2,33 +2,55 @@
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
 using Application.Cart.Dto;
+using Domain.Common;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
 namespace Application.Cart.AddCartItem;
 
-internal sealed class AddCartItemCommandHandler(IApplicationDbContext context, IUserContext userContext, IDateTimeProvider dateTimeProvider) : ICommandHandler<AddCartItemCommand, CartDto>
+internal sealed class AddCartItemCommandHandler(
+    IApplicationDbContext db,
+    IUserContext userContext,
+    IDateTimeProvider dateTimeProvider)
+    : ICommandHandler<AddCartItemCommand, CartDto>
 {
-    public async Task<Result<CartDto>> Handle(AddCartItemCommand command, CancellationToken cancellationToken)
+    public async Task<Result<CartDto>> Handle(
+        AddCartItemCommand command,
+        CancellationToken cancellationToken)
     {
         Guid userId = userContext.UserId;
-        Domain.MenuItem.MenuItem? menuItem = await context.MenuItem.Include(m => m.Restaurant).FirstOrDefaultAsync(m => m.Id == command.MenuItemId && m.IsAvailable, cancellationToken);
+
+        Domain.MenuItem.MenuItem? menuItem = await db.MenuItem
+            .Include(m => m.Restaurant)
+            .FirstOrDefaultAsync(
+                m => m.Id == command.MenuItemId && m.IsAvailable,
+                cancellationToken);
 
         if (menuItem is null)
         {
-            return Result.Failure<CartDto>(Domain.Common.CommonErrors.CustomErrorMessage("Menu Item not found or available"));
+            return Result.Failure<CartDto>(
+                CommonErrors.CustomErrorMessage("Menu item not found or unavailable."));
         }
+
 
         if (!menuItem.Restaurant.IsActive || !menuItem.Restaurant.IsOpen)
         {
-            return Result.Failure<CartDto>(Domain.Common.CommonErrors.CustomErrorMessage("Restaurant is currently closed"));
+            return Result.Failure<CartDto>(
+                CommonErrors.CustomErrorMessage("Restaurant is currently closed."));
         }
 
-        Domain.Cart.Cart? existingCart = await context.Cart.Include(x => x.Restaurant).Include(c => c.Items).ThenInclude(x => x.MenuItem).FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
 
-        if (existingCart is not null && existingCart.RestaurantId != menuItem.RestaurantId)
+        Domain.Cart.Cart? existingCart = await db.Cart
+            .Include(c => c.Restaurant)
+            .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
+
+        if (existingCart is not null &&
+            existingCart.RestaurantId != menuItem.RestaurantId)
         {
-            return Result.Failure<CartDto>(Domain.Common.CommonErrors.CustomErrorMessage($"Your cart has items from {existingCart.Restaurant.Name}. Adding items from {menuItem.Restaurant.Name} will clear your current cart."));
+            return Result.Failure<CartDto>(
+                CommonErrors.CustomErrorMessage(
+                    $"Your cart has items from {existingCart.Restaurant.Name}. " +
+                    $"Adding items from {menuItem.Restaurant.Name} will clear your current cart."));
         }
 
         if (existingCart is null)
@@ -43,25 +65,37 @@ internal sealed class AddCartItemCommandHandler(IApplicationDbContext context, I
                 CreatedAt = dateTimeProvider.UtcNow,
                 Items = []
             };
-
-            await context.Cart.AddAsync(existingCart, cancellationToken);
+            await db.Cart.AddAsync(existingCart, cancellationToken);
+            await db.SaveChangesAsync(cancellationToken);
         }
 
-        Domain.Cart.CartItem? existingLine = existingCart.Items
-            .FirstOrDefault(i => i.MenuItemId == command.MenuItemId);
+        Domain.Cart.CartItem? existingLine = await db.CartItems
+            .FirstOrDefaultAsync(
+                i => i.CartId == existingCart.Id &&
+                     i.MenuItemId == command.MenuItemId,
+                cancellationToken);
 
         if (existingLine is not null)
         {
-            existingLine.Quantity += command.Quantity;
+            int newQty = existingLine.Quantity + command.Quantity;
 
-            if (existingLine.Quantity > 20)
+            if (newQty > 20)
             {
-                return Result.Failure<CartDto>(Domain.Common.CommonErrors.CustomErrorMessage("Maximum quantity of 20 per item exceeded."));
+                return Result.Failure<CartDto>(
+                   CommonErrors.CustomErrorMessage(
+                       $"Maximum quantity of 20 per item exceeded. " +
+                       $"You already have {existingLine.Quantity} in your cart."));
             }
+
+            await db.CartItems
+                .Where(i => i.Id == existingLine.Id)
+                .ExecuteUpdateAsync(
+                    s => s.SetProperty(i => i.Quantity, newQty),
+                    cancellationToken);
         }
         else
         {
-            existingCart.Items.Add(new Domain.Cart.CartItem
+            var newItem = new Domain.Cart.CartItem
             {
                 Id = Guid.NewGuid(),
                 CartId = existingCart.Id,
@@ -71,18 +105,19 @@ internal sealed class AddCartItemCommandHandler(IApplicationDbContext context, I
                 Notes = command.Notes,
                 CreatedBy = userId.ToString(),
                 CreatedAt = dateTimeProvider.UtcNow,
-            });
+            };
+
+            await db.CartItems.AddAsync(newItem, cancellationToken);
+            await db.SaveChangesAsync(cancellationToken);
         }
 
-        await context.SaveChangesAsync(cancellationToken);
+        Domain.Cart.Cart cart = await db.Cart
+            .AsNoTracking()
+            .Include(c => c.Items)
+                .ThenInclude(i => i.MenuItem)
+            .Include(c => c.Restaurant)
+            .FirstAsync(c => c.Id == existingCart.Id, cancellationToken);
 
-        //await context.Entry(existingCart)
-        //    .Collection(c => c.Items)
-        //    .Query()
-        //    .Include(i => i.MenuItem)
-        //    .LoadAsync(cancellationToken);
-
-        return (CartDto)existingCart;
-
+        return (CartDto)cart;
     }
 }

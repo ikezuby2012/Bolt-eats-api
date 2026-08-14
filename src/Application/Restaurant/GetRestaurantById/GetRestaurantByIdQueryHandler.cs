@@ -10,7 +10,7 @@ internal sealed class GetRestaurantByIdQueryHandler(IApplicationDbContext contex
 {
     public async Task<Result<RestaurantDto>> Handle(GetRestaurantByIdQuery query, CancellationToken cancellationToken)
     {
-        Domain.Restaurant.Restaurant? restaurant = await context.Restaurants.FirstOrDefaultAsync(x => x.Id == query.Id, cancellationToken);
+        Domain.Restaurant.Restaurant? restaurant = await context.Restaurants.Include(x => x.Addresses).FirstOrDefaultAsync(x => x.Id == query.Id, cancellationToken);
 
         if (restaurant is null)
         {

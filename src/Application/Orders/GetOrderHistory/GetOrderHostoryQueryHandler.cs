@@ -23,8 +23,12 @@ internal sealed class GetOrderHostoryQueryHandler(IApplicationDbContext context,
         List<OrderSummaryDto> items = await query.Skip((req.Page - 1) * req.PageSize).Take(req.PageSize)
             .Select(o => new OrderSummaryDto(
                 o.Id,
+                o.OrderCode,
                 o.RestaurantId,
                 o.Restaurant.Name,
+                o.Restaurant.LogoUrl ?? "",
+                o.OrderStatusId,
+                o.EstimatedDeliveryMinutes,
                 EOrderStatus.FromValue(o.OrderStatusId)!.Name,
                 o.Total,
                 o.Items.Count,

@@ -9,6 +9,7 @@ using Application.Cart.GetCartSummary;
 using Application.Cart.GetUserCart;
 using Application.Cart.RemovePromoCode;
 using Application.Cart.UpdateCartItem;
+using Application.Restaurant.UpdateCartItemQuantity;
 using Domain.Cart;
 using Microsoft.AspNetCore.Mvc;
 using SharedKernel;
@@ -25,13 +26,13 @@ public class Cart : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet("cart", async ([AsParameters] GetUserCartQuery param, IQueryHandler<GetUserCartQuery, PaginatedResult<CartDto>> handler, CancellationToken cancellationToken) =>
+        app.MapGet("cart", async (IQueryHandler<GetUserCartQuery, CartDto> handler, CancellationToken cancellationToken) =>
         {
-            var query = new GetUserCartQuery(param.PageSize, param.pageNumber);
+            var query = new GetUserCartQuery();
 
-            Result<PaginatedResult<CartDto>> result = await handler.Handle(query, cancellationToken);
+            Result<CartDto> result = await handler.Handle(query, cancellationToken);
 
-            return result.Match(value => Results.Ok(ApiResponse<PaginatedResult<CartDto>>.Success(value, "All User Carts")), error => CustomResults.Problem(error));
+            return result.Match(value => Results.Ok(ApiResponse<CartDto>.Success(value, "All User Carts")), error => CustomResults.Problem(error));
         }).WithTags(Tags.Cart).RequireAuthorization().WithName("GetCart").Produces<PaginatedResult<CartDto>>();
 
         app.MapGet("cart/summary", async (IQueryHandler<GetCartSummaryQuery, CartSummaryDto> handler, CancellationToken cancellationToken) =>
@@ -107,6 +108,46 @@ public class Cart : IEndpoint
 
             return result.Match(value => Results.Ok(ApiResponse<CartSummaryDto>.Success(value, "Promo code removed from cart successfully")), error => CustomResults.Problem(error));
         }).WithTags(Tags.Cart).RequireAuthorization().WithName("RemovePromoCode").Produces<CartDto>().Produces(404);
+
+        // Endpoint
+
+        // PATCH cart/items/{cartItemId}/increase
+        app.MapPatch("cart/items/{cartItemId:guid}/increase", async (
+            Guid cartItemId,
+            ICommandHandler<UpdateCartItemQuantityCommand, CartDto> handler,
+            CancellationToken ct) =>
+        {
+            Result<CartDto> result = await handler.Handle(
+                new UpdateCartItemQuantityCommand(cartItemId, QuantityAction.Increase), ct);
+
+            return result.Match(
+                value => Results.Ok(ApiResponse<CartDto>.Success(value)),
+                error => CustomResults.Problem(error));
+        })
+        .WithName("IncreaseCartItemQuantity")
+        .WithTags(Tags.Cart)
+        .RequireAuthorization()
+        .Produces<ApiResponse<CartDto>>()
+        .Produces(404);
+
+        // PATCH cart/items/{cartItemId}/decrease
+        app.MapPatch("cart/items/{cartItemId:guid}/decrease", async (
+            Guid cartItemId,
+            ICommandHandler<UpdateCartItemQuantityCommand, CartDto> handler,
+            CancellationToken ct) =>
+        {
+            Result<CartDto> result = await handler.Handle(
+                new UpdateCartItemQuantityCommand(cartItemId, QuantityAction.Decrease), ct);
+
+            return result.Match(
+                value => Results.Ok(ApiResponse<CartDto>.Success(value)),
+                error => CustomResults.Problem(error));
+        })
+        .WithName("DecreaseCartItemQuantity")
+        .WithTags(Tags.Cart)
+        .RequireAuthorization()
+        .Produces<ApiResponse<CartDto>>()
+        .Produces(404);
     }
 }
 

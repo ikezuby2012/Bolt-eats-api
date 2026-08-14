@@ -5,6 +5,7 @@ using Application.Abstractions.Interface;
 using Application.Abstractions.Interface.Jobs;
 using Application.Abstractions.Services;
 using Application.Abstractions.Services.Notification;
+using Application.Abstractions.Services.Order;
 using Application.Abstractions.Services.Payments;
 using Application.Abstractions.Services.Rider;
 using Application.Abstractions.Services.UploadMedia;
@@ -17,6 +18,7 @@ using Infrastructure.Authorization;
 using Infrastructure.BackgroundJobs;
 using Infrastructure.Database;
 using Infrastructure.DomainEvents;
+using Infrastructure.Hubs;
 using Infrastructure.Services;
 using Infrastructure.Services.ImageUpload;
 using Infrastructure.Services.NotificationService;
@@ -82,7 +84,8 @@ public static class DependencyInjection
         services.AddKeyedScoped<IWebhookParser, StripeWebhookParser>("stripe");
         services.AddKeyedScoped<IWebhookParser, MonnifyWebhookParser>("monnify");
         services.AddScoped<ITrackingService, TrackingService>();
-
+        services.AddScoped<IPaymentHubService, PaymentHubService>();
+        services.AddScoped<IOrderHubService, OrderHubService>();
 
         return services;
     }

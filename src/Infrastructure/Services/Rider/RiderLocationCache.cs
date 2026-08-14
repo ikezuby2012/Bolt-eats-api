@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Globalization;
+using System.Text.Json;
 using Application.Abstractions.Services.Rider;
 using Application.Tracking.Dto;
 using StackExchange.Redis;
@@ -12,7 +13,7 @@ internal sealed class RiderLocationCache(IConnectionMultiplexer redis) : IRiderL
     private const string MetaPrefix = "riders:meta:";
     private const string LoadPrefix = "riders:load:";
 
-    private static readonly TimeSpan AvailableTtl = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan AvailableTtl = TimeSpan.FromHours(1);//TimeSpan.FromSeconds(120);
     private static readonly TimeSpan BusyTtl = TimeSpan.FromHours(8);
 
     private IDatabase Db => redis.GetDatabase();
@@ -63,10 +64,10 @@ internal sealed class RiderLocationCache(IConnectionMultiplexer redis) : IRiderL
             return null;   // TTL expired = offline
         }
 
-        return val.ToString() switch
+        return val.ToString().ToUpperInvariant() switch
         {
-            "available" => RiderAvailability.Available,
-            "busy" => RiderAvailability.Busy,
+            "AVAILABLE" => RiderAvailability.Available,
+            "BUSY" => RiderAvailability.Busy,
             _ => RiderAvailability.Offline
         };
     }
@@ -75,10 +76,23 @@ internal sealed class RiderLocationCache(IConnectionMultiplexer redis) : IRiderL
 
     public async Task SetStatusAsync(Guid riderId, RiderAvailability status, CancellationToken cancellationToken = default)
     {
-        await Db.StringSetAsync(
-             $"{StatusPrefix}{riderId}",
-             status.ToString().ToLower(System.Globalization.CultureInfo.CurrentCulture),
-             status == RiderAvailability.Available ? AvailableTtl : BusyTtl);
+        string key = $"{StatusPrefix}{riderId}";
+
+        string value = status
+            .ToString()
+            .ToUpperInvariant();
+
+        TimeSpan ttl = status == RiderAvailability.Available
+            ? AvailableTtl
+            : BusyTtl;
+
+        bool result = await Db.StringSetAsync(
+            key,
+            value,
+            ttl);
+
+        Console.WriteLine(
+            $"Redis SET: key={key}, value={value}, ttl={ttl}, result={result}");
     }
 
     public async Task UpdateLocationAsync(Guid riderId, double latitude, double longitude, double? heading, double? speed, CancellationToken cancellationToken = default)

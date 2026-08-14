@@ -866,50 +866,62 @@ namespace Infrastructure.Database.Migrations
                         new
                         {
                             Id = 1,
-                            Description = "Order placed, awaiting restaurant acceptance",
-                            Name = "Pending"
+                            Description = "Order created, waiting for customer payment",
+                            Name = "Awaiting_Payment"
                         },
                         new
                         {
                             Id = 2,
+                            Description = "Payment received, awaiting restaurant acceptance",
+                            Name = "Pending"
+                        },
+                        new
+                        {
+                            Id = 3,
                             Description = "Restaurant confirmed the order",
                             Name = "Accepted"
                         },
                         new
                         {
-                            Id = 3,
+                            Id = 4,
                             Description = "Food is being prepared",
                             Name = "Preparing"
                         },
                         new
                         {
-                            Id = 4,
+                            Id = 5,
                             Description = "Ready for rider collection",
                             Name = "Ready_For_Pickup"
                         },
                         new
                         {
-                            Id = 5,
+                            Id = 6,
                             Description = "Rider en route to customer",
                             Name = "In_Transit"
                         },
                         new
                         {
-                            Id = 6,
-                            Description = "Order completed Successfully",
+                            Id = 7,
+                            Description = "Order completed successfully",
                             Name = "Delivered"
                         },
                         new
                         {
-                            Id = 7,
+                            Id = 8,
                             Description = "Cancelled by customer or restaurant",
                             Name = "Cancelled"
                         },
                         new
                         {
-                            Id = 8,
+                            Id = 9,
                             Description = "Payment reversed",
                             Name = "Refunded"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Description = "Payment failed",
+                            Name = "Payment_Failed"
                         });
                 });
 
@@ -937,9 +949,28 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("cancelled_at");
 
+                    b.Property<Guid>("CartId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cart_id");
+
                     b.Property<DateTime?>("CheckoutAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("checkout_at");
+
+                    b.Property<string>("ContactEmail")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("contact_email");
+
+                    b.Property<string>("ContactName")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)")
+                        .HasColumnName("contact_name");
+
+                    b.Property<string>("ContactPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("contact_phone");
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -986,6 +1017,20 @@ namespace Infrastructure.Database.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("notes");
+
+                    b.Property<DateTime?>("OfferedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("offered_at");
+
+                    b.Property<Guid?>("OfferedToRiderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("offered_to_rider_id");
+
+                    b.Property<string>("OrderCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("order_code");
 
                     b.Property<int>("OrderStatusId")
                         .ValueGeneratedOnAdd()
@@ -1052,8 +1097,14 @@ namespace Infrastructure.Database.Migrations
                     b.HasIndex("AddressId")
                         .HasDatabaseName("ix_tbl_order_address_id");
 
+                    b.HasIndex("CartId")
+                        .HasDatabaseName("ix_tbl_order_cart_id");
+
                     b.HasIndex("CustomerId")
                         .HasDatabaseName("ix_tbl_order_customer_id");
+
+                    b.HasIndex("OfferedToRiderId")
+                        .HasDatabaseName("ix_tbl_order_offered_to_rider_id");
 
                     b.HasIndex("OrderStatusId")
                         .HasDatabaseName("ix_tbl_order_order_status_id");
@@ -1928,6 +1979,192 @@ namespace Infrastructure.Database.Migrations
                     b.ToTable("tbl_rider_location", "public");
                 });
 
+            modelBuilder.Entity("Domain.Rider.RiderProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("DriverLicenseId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("driver_license_id");
+
+                    b.Property<string>("DriverLicenseUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("driver_license_url");
+
+                    b.Property<string>("InsuranceCertId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("insurance_cert_id");
+
+                    b.Property<string>("InsuranceCertUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("insurance_cert_url");
+
+                    b.Property<bool>("IsSoftDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_soft_deleted");
+
+                    b.Property<string>("NationalIdId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("national_id_id");
+
+                    b.Property<string>("NationalIdUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("national_id_url");
+
+                    b.Property<string>("NumberPlate")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("number_plate");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("rejection_reason");
+
+                    b.Property<int>("StatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("status_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<string>("VehicleColor")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("vehicle_color");
+
+                    b.Property<string>("VehicleMake")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("vehicle_make");
+
+                    b.Property<string>("VehicleModel")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("vehicle_model");
+
+                    b.Property<string>("VehiclePhotoId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("vehicle_photo_id");
+
+                    b.Property<string>("VehiclePhotoUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("vehicle_photo_url");
+
+                    b.Property<string>("VehicleType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("vehicle_type");
+
+                    b.Property<string>("VehicleYear")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("vehicle_year");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("verified_at");
+
+                    b.Property<Guid?>("VerifiedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("verified_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tbl_rider_profile");
+
+                    b.HasIndex("NumberPlate")
+                        .IsUnique()
+                        .HasDatabaseName("ix_tbl_rider_profile_number_plate");
+
+                    b.HasIndex("StatusId")
+                        .HasDatabaseName("ix_tbl_rider_profile_status_id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_tbl_rider_profile_user_id");
+
+                    b.ToTable("TBL_RIDER_PROFILE", "public", t =>
+                        {
+                            t.HasCheckConstraint("CK_RIDER_PROFILE_VEHICLE_TYPE", "\"vehicle_type\" IN ('Motorcycle', 'Bicycle', 'Car')");
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Rider.RiderVerificationStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tbl_rider_verification_status");
+
+                    b.ToTable("TBL_RIDER_VERIFICATION_STATUS", "public");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Pending"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Under Review"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Succeeded"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Rejected"
+                        });
+                });
+
             modelBuilder.Entity("Domain.Users.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2249,12 +2486,25 @@ namespace Infrastructure.Database.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_order_address");
 
+                    b.HasOne("Domain.Cart.Cart", "Cart")
+                        .WithMany()
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired()
+                        .HasConstraintName("fk_order_cart");
+
                     b.HasOne("Domain.Users.User", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_order_customer");
+
+                    b.HasOne("Domain.Users.User", "OfferedToRider")
+                        .WithMany()
+                        .HasForeignKey("OfferedToRiderId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_order_offered_to_rider");
 
                     b.HasOne("Domain.Order.EOrderStatus", "OrderStatus")
                         .WithMany()
@@ -2278,7 +2528,11 @@ namespace Infrastructure.Database.Migrations
 
                     b.Navigation("Address");
 
+                    b.Navigation("Cart");
+
                     b.Navigation("Customer");
+
+                    b.Navigation("OfferedToRider");
 
                     b.Navigation("OrderStatus");
 
@@ -2453,6 +2707,27 @@ namespace Infrastructure.Database.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("Rider");
+                });
+
+            modelBuilder.Entity("Domain.Rider.RiderProfile", b =>
+                {
+                    b.HasOne("Domain.Rider.RiderVerificationStatus", "Status")
+                        .WithMany()
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_tbl_rider_profile_rider_verification_status_status_id");
+
+                    b.HasOne("Domain.Users.User", "User")
+                        .WithOne()
+                        .HasForeignKey("Domain.Rider.RiderProfile", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_tbl_rider_profile_users_user_id");
+
+                    b.Navigation("Status");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Users.User", b =>

@@ -89,6 +89,12 @@ public sealed class MenuItemDto
     };
 }
 
+public sealed record MenuCategoryDto(
+    Guid Id,
+    string Name,
+    int? DisplayOrder,
+    IReadOnlyList<MenuItemDto2> Items);
+
 public record HomeMenuItemDto(
     Guid MenuItemId,
     string MenuItemName,
@@ -128,3 +134,83 @@ public sealed record HomeSectionItemDto(
     string DeliveryFee,
     string DeliveryTime,
     int PrepTimeMin);
+
+public sealed record NearbyCategoryDto(
+    Guid CategoryId,
+    string CategoryName,
+    int SortOrder,
+    Guid RestaurantId,
+    string RestaurantName,
+    string? RestaurantLogo,
+    double RestaurantRating,
+    bool RestaurantIsOpen,
+    int? MenuItemCount = 0);
+
+public sealed record NearbyMenuItemDto(
+    Guid MenuItemId,
+    string MenuItemName,
+    string MenuItemDescription,
+    decimal Price,
+    decimal? DiscountPrice,
+    string? ImageLink,
+    int PrepTimeMin,
+    bool IsPopular,
+    int? Calories,
+    Guid CategoryId,
+    string CategoryName,
+    Guid RestaurantId,
+    string RestaurantName,
+    string? RestaurantLogo,
+    double RestaurantRating,
+    bool RestaurantIsOpen,
+    string DeliveryFee,
+    string DeliveryTime);
+
+public sealed record MenuItemDetailDto(
+    Guid Id,
+    string Name,
+    string Description,
+    decimal Price,
+    decimal? DiscountPrice,
+    string? ImageLink,
+    int PrepTimeMin,
+    bool IsPopular,
+    bool IsAvailable,
+    int? Calories,
+    int SortOrder,
+    Guid CategoryId,
+    string CategoryName,
+    Guid RestaurantId,
+    string RestaurantName,
+    string? RestaurantLogo,
+    string? RestaurantBanner,
+    double RestaurantRating,
+    int RestaurantTotalReviews,
+    bool RestaurantIsOpen,
+    string DeliveryFee,
+    string DeliveryTime,
+    decimal? MinOrderAmount);
+
+public sealed record RelatedMenuItemDto(
+    Guid Id,
+    string Name,
+    string Description,
+    decimal Price,
+    decimal? DiscountPrice,
+    string? ImageLink,
+    int PrepTimeMin,
+    bool IsPopular,
+    string CategoryName);
+
+public sealed record MenuItemDto2(
+    Guid Id,
+    string Name,
+    string Description,
+    decimal Price,
+    decimal? DiscountPrice,
+    string? ImageLink,
+    int PrepTimeMin,
+    bool IsPopular,
+    bool IsAvailable,
+    int? Calories,
+    int SortOrder);

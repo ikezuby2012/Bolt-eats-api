@@ -15,3 +15,8 @@ public sealed record DeliveryEstimate(
     int BufferMinutes,
     int DistanceMetres,
     bool IsTrafficBased);
+
+public record DurationResult(
+    bool IsSuccess,
+    int DurationInTrafficSeconds,
+    bool IsTrafficBased = true);
