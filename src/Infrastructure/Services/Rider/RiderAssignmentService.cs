@@ -330,4 +330,12 @@ internal sealed class RiderAssignmentService(IApplicationDbContext context, ICon
        new(IsSuccess: false,
            DurationInTrafficSeconds: 20 * 60,   // 20-minute default
            IsTrafficBased: false);
+
+    public async Task MarkRiderBusyAsync(Guid riderId, CancellationToken cancellationToken = default)
+    {
+        await locationCache.SetStatusAsync(riderId, RiderAvailability.Busy, cancellationToken);
+
+        // Increment active order count
+        await locationCache.IncrementLoadAsync(riderId, cancellationToken);
+    }
 }

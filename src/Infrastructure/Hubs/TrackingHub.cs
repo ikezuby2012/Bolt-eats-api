@@ -115,7 +115,7 @@ public sealed class TrackingHub(IApplicationDbContext db) : Hub
         return new OrderTrackingSnapshotDto(
             OrderId: order.Id,
             Status: EOrderStatus.FromValue(order.OrderStatusId)!.Name ?? "",
-            RiderLocation: (RiderLocationDto)location!,
+            RiderLocation: location is not null ? (RiderLocationDto)location : null,
             DeliveryAddress: (AddressDto)order.Address,
             EstimatedMinutesRemaining: order.EstimatedDeliveryMinutes);
     }

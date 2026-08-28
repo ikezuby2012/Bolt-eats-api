@@ -1,4 +1,5 @@
-﻿using Application.Abstractions.Messaging;
+﻿using Application.Abstractions.Authentication;
+using Application.Abstractions.Messaging;
 using Application.Orders.AdvanceOrderStatus;
 using Application.Orders.AssignRider;
 using Application.Orders.CancelOrder;
@@ -9,6 +10,7 @@ using Application.Orders.GetOrderById;
 using Application.Orders.GetOrderHistory;
 using Application.Orders.GetRestaurantOrders;
 using Application.Orders.GetRiderActiveOrder;
+using Application.Orders.RespondToOrderOffer;
 using Application.Orders.TestAutoAsync;
 using Microsoft.AspNetCore.Mvc;
 using SharedKernel;
@@ -19,27 +21,15 @@ namespace Web.Api.Endpoints.Order;
 
 public class Order : IEndpoint
 {
-    internal sealed record CreateOrderRequest(
-    Guid? AddressId,
-    string? ContactEmail,
-    string? contactName,
-    string? ContactPhone,
-    string? CustomerNotes);
+    internal sealed record CreateOrderRequest(Guid? AddressId, string? ContactEmail, string? contactName, string? ContactPhone, string? CustomerNotes);
 
-    internal sealed record GetAllOrdersAdminParams(
-    string? statusFilter,
-    Guid? RestaurantId,
-    Guid? CustomerId,
-    Guid? RiderId,
-    DateTime? From,
-    DateTime? To,
-    int Page = 1,
-    int PageSize = 20);
+    internal sealed record GetAllOrdersAdminParams(string? statusFilter, Guid? RestaurantId, Guid? CustomerId, Guid? RiderId, DateTime? From, DateTime? To, int Page = 1, int PageSize = 20);
 
     internal sealed record GetOrderHistoryParams(int Page = 1, int PageSize = 20, DateTime? DateFrom = null, DateTime? DateTo = null);
     internal sealed record GetRestaurantOrdersParams(Guid RestaurantId, string? Status, int Page = 1, int PageSize = 20);
     internal sealed record UpdateOrderStatusRequest(string status);
     internal sealed record AssignRiderRequest(Guid RiderId);
+    public record RespondToOfferRequest(bool Accepted);
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
@@ -144,8 +134,23 @@ public class Order : IEndpoint
         })
         .WithName("TestAutoAssign")
         .WithTags(Tags.Order)
-        .RequireAuthorization()   // Admin only — test endpoint
+        .RequireAuthorization()
         .Produces<ApiResponse<string>>()
         .Produces<ProblemDetails>(400);
+
+        // Endpoints/OrderEndpoints.cs
+
+        app.MapPost("order/{id:guid}/offer/respond", async (Guid id, RespondToOfferRequest body, IUserContext ctx, ICommandHandler<RespondToOrderOfferCommand> handler, CancellationToken ct) =>
+        {
+            Result result = await handler.Handle(new RespondToOrderOfferCommand(id, ctx.UserId, body.Accepted), ct);
+
+            return result.Match(
+                () => Results.NoContent(),
+                error => CustomResults.Problem(error));
+        })
+        .WithName("RespondToOrderOffer")
+        .WithTags(Tags.Order)
+        .RequireAuthorization()
+        .Produces(204);
     }
 }

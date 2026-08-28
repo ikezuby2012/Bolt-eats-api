@@ -1,6 +1,7 @@
 ﻿using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
 using Application.Abstractions.Services.Rider;
+using Application.Tracking.Dto;
 using Domain.Order;
 using Domain.Rider;
 using Microsoft.EntityFrameworkCore;
@@ -51,6 +52,11 @@ internal sealed class PushRiderLocationCommandHandler(IApplicationDbContext db, 
             command.Longitude,
             command.Bearing,
             command.Speed,
+            cancellationToken);
+
+        await locationCache.SetStatusAsync(
+            command.RiderId,
+            RiderAvailability.Available,
             cancellationToken);
 
         newRiderLocation.Raise(new BroadcastLocationDomain(command.OrderId, new RiderLocationUpdatedPayload(command.RiderId, command.OrderId,
